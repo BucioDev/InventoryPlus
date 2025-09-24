@@ -46,7 +46,7 @@ export default async function userResetPassPage({params}:{params:Promise<{id:str
                         <input type="hidden" name="id" value={id} />
                         <input type="hidden" name="username" value={user.username} />
                         <Label>Escriba la nueva contraseña</Label>
-                        <Input type="password" name="pass" placeholder="Contraseña" className="w-full" />
+                        <Input type="password" name="pass" placeholder="Contraseña" min={8} className="w-full" />
                         </div>
                         <div className="flex justify-between ">
                             <Button variant="default"  asChild>

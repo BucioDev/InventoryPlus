@@ -198,9 +198,7 @@ export async function changePassword(formData:FormData){
         redirect("/")
     }
 
-    if(!newPass || newPass.length < 8){
-        return {error:"La contraseña debe tener al menos 8 caracteres"}
-    }
+    
 
     const userid = formData.get("id") as string;
 
