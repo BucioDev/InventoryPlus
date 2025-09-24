@@ -3,6 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { BrowserMultiFormatReader } from "@zxing/browser";
 import {  Result } from "@zxing/library";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DialogTrigger } from "@radix-ui/react-dialog";
+import { Button } from "@/components/ui/button";
 
 // Aspect ratio and crop size factor
 const DESIRED_CROP_ASPECT_RATIO = 3 / 2;
@@ -13,8 +17,9 @@ export default function BarcodeScanner() {
   const displayCroppedCanvasRef = useRef<HTMLCanvasElement>(null);
   const cropOverlayRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
-  const [barcodeResult, setBarcodeResult] = useState<string | null>(null);
+  const [barcodeResult, setBarcodeResult] = useState<string>("");
   const codeReader = useRef(new BrowserMultiFormatReader());
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout | null = null;
@@ -33,7 +38,7 @@ export default function BarcodeScanner() {
         }
       } catch (err) {
         console.error("Camera error:", err);
-        setError("Unable to access the camera. Please check permissions.");
+        setError("Incapaz de accesar camara, por favor recargar y aceptar permisos");
       }
     };
 
@@ -134,59 +139,35 @@ export default function BarcodeScanner() {
   }, []);
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      fontFamily: 'sans-serif'
-    }}>
-      <h2 style={{
-        fontSize: '1.5rem',
-        fontWeight: 'bold',
-        color: '#1f2937'
-      }}>
-        Camera View for Barcode Scanning
-      </h2>
-
-      <div style={{
-        position: 'relative',
-        width: '100%',
-        maxWidth: '400px',
-        overflow: 'hidden',
-      }}>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="my-auto">
+        📷 Scanear codigo de barras
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>
+          Camara activa. El borde blanco indica el area de escaneo del codigo de barras.
+          </DialogTitle>
+        </DialogHeader>
+      
+    <div className="flex flex-col items-center font-[sans-serif]" >
+      <div className="relative w-full max-w-[400px] overflow-hidden" >
         <video
           ref={videoRef}
           autoPlay
           playsInline
           muted
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover'
-          }}
+          className="w-full h-full object-cover"
         />
         <div
           ref={cropOverlayRef}
         ></div>
       </div>
 
-      {error && <p style={{ color: '#ef4444', marginTop: '1rem', fontSize: '0.875rem' }}>{error}</p>}
+      {error && <p className="mt-4 text-sm text-[#ef4444]">{error}</p>}
 
-      <p style={{
-        color: '#4b5563',
-        fontSize: '0.875rem',
-        textAlign: 'center'
-      }}>
-        Camera active. The white border indicates the barcode scanning area.
-      </p>
-
-      <h3 style={{
-        fontSize: '1.25rem',
-        fontWeight: 'semibold',
-        color: '#1f2937'
-      }}>
-        Cropped Barcode Scan Area:
-      </h3>
 
       <canvas
         ref={displayCroppedCanvasRef}
@@ -196,20 +177,14 @@ export default function BarcodeScanner() {
           boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05)',
           maxWidth: '100%',
           height: 'auto',
-          display: 'block',
+          display: 'none',
           minWidth: '240px',
-          minHeight: '80px'
+          minHeight: '80px',
         }}
       >
-        Your browser does not support the canvas element.
+        Tu explorar no soporta el elemento canvas.
       </canvas>
 
-      <p style={{
-        color: '#9ca3af',
-        fontSize: '0.75rem',
-      }}>
-        This canvas updates every 0.1 seconds with the focused area.
-      </p>
         <div style={{
           padding: '1rem',
           border: '2px dashed #10b981',
@@ -221,7 +196,12 @@ export default function BarcodeScanner() {
           textAlign: 'center'
         }}>
           ✅ Barcode : {barcodeResult}
+          
+          <Input type="text" value={barcodeResult}  className="mt-2 w-full" />
+          
         </div>
     </div>
+    </DialogContent>
+    </Dialog>
   );
 }
