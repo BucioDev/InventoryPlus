@@ -128,7 +128,7 @@ export default function BarcodeScanner() {
 
       decodeCanvas(); // Call the async function
     };
-    
+
     if (open) {
       startCamera();
     } else {
@@ -153,7 +153,7 @@ export default function BarcodeScanner() {
         📷 Scanear codigo de barras
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>
           Camara activa. El borde blanco indica el area de escaneo del codigo de barras.
@@ -205,7 +205,7 @@ export default function BarcodeScanner() {
         }}>
           ✅ Barcode : {barcodeResult}
           
-          <Input type="text" value={barcodeResult}  className="mt-2 w-full" />
+          <Input type="text" value={barcodeResult}  className="mt-2 w-full"/>
           
         </div>
     </div>
