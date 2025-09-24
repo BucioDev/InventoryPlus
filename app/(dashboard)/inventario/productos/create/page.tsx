@@ -20,7 +20,6 @@ import { useActionState, useEffect, useState } from "react";
 
 export default function CreateProductPage() {
 
-    const [barcode, setBarcode] = useState("");
 
     const [images, setImages] = useState<string[]>([]);
     //fetching categories
@@ -82,11 +81,8 @@ export default function CreateProductPage() {
                             <Input type="text" placeholder=""
                             key={fields.barcode.key}
                             name={fields.barcode.name}
-                            defaultValue={fields.barcode.initialValue}
-                            value={barcode}
-                            onChange={(e) => setBarcode(e.target.value)}/>
+                            defaultValue={fields.barcode.initialValue}/>
                             <p className="text-red-500">{fields.barcode.errors}</p>
-                            <BarcodeScanner onDetected={(code) => setBarcode(code)} />
                         </div>
                         <div className="flex flex-col gap-3"> 
                             <Label>Categoria del producto</Label>
