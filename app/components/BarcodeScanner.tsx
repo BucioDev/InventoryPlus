@@ -42,6 +42,8 @@ export default function BarcodeScanner() {
       }
     };
 
+    
+
     const captureFrameAndCrop = () => {
       if (!videoRef.current || !displayCroppedCanvasRef.current || !cropOverlayRef.current) return;
 
@@ -126,20 +128,26 @@ export default function BarcodeScanner() {
 
       decodeCanvas(); // Call the async function
     };
-
-    startCamera();
-
-    return () => {
+    
+    if (open) {
+      startCamera();
+    } else {
+      // Stop camera when dialog closes
       if (videoRef.current?.srcObject) {
         const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
         tracks.forEach((track) => track.stop());
+        videoRef.current.srcObject = null;
       }
       if (intervalId) clearInterval(intervalId);
+    }
+  
+    return () => {
+      if (intervalId) clearInterval(intervalId);
     };
-  }, []);
+  }, [open]);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={setOpen} >
       <DialogTrigger asChild>
         <Button className="my-auto">
         📷 Scanear codigo de barras
