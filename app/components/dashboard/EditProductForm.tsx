@@ -18,6 +18,11 @@ import Link from "next/link";
 import { da } from "zod/v4/locales";
 
 
+type Category = {
+    id: string;
+    name: string;
+  };
+
 
 interface EditProductFormProps {
     data:{
@@ -40,12 +45,12 @@ export default function EditProductForm({data}:EditProductFormProps) {
 
     const [images, setImages] = useState<string[]>(data.images);
     //fetching categories
-    const [categorys, setCategorys] = useState<string[]>([]);
+    const [categorys, setCategorys] = useState<Category[]>([]);
 
     useEffect(() => {
         const fetchCategorys = async () => {
             const res = await fetch("/api/categorias");
-            const data = await res.json();
+            const data: Category[] = await res.json();
             setCategorys(data)
         };
         fetchCategorys();

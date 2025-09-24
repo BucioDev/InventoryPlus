@@ -18,17 +18,22 @@ import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
 
 
+type Category = {
+    id: string;
+    name: string;
+  };
+
 export default function CreateProductPage() {
 
 
     const [images, setImages] = useState<string[]>([]);
     //fetching categories
-    const [categorys, setCategorys] = useState<string[]>([]);
+    const [categorys, setCategorys] = useState<Category[]>([]);
 
     useEffect(() => {
         const fetchCategorys = async () => {
             const res = await fetch("/api/categorias");
-            const data = await res.json();
+            const data: Category[] = await res.json();
             setCategorys(data)
         };
         fetchCategorys();
