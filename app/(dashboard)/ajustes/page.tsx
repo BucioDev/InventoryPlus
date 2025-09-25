@@ -1,3 +1,4 @@
+"use client";
 import BarcodeScanner from "@/app/components/BarcodeScanner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
