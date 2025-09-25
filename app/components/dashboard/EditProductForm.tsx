@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { da } from "zod/v4/locales";
+import BarcodeScanner from "../BarcodeScanner";
 
 
 type Category = {
@@ -43,6 +44,7 @@ interface EditProductFormProps {
 
 export default function EditProductForm({data}:EditProductFormProps) {
 
+    const [barcode, setBarcode] = useState(data.barcode);
     const [images, setImages] = useState<string[]>(data.images);
     //fetching categories
     const [categorys, setCategorys] = useState<Category[]>([]);
@@ -101,7 +103,12 @@ export default function EditProductForm({data}:EditProductFormProps) {
                             <Input type="text" placeholder=""
                             key={fields.barcode.key}
                             name={fields.barcode.name}
-                            defaultValue={data.barcode}/>
+                            defaultValue={data.barcode}
+                            value={barcode}
+                            onChange={(e) => setBarcode(e.target.value)}/>
+                            <div className="flex md:hidden">
+                            <BarcodeScanner onDetected={(code) => setBarcode(code)} />
+                            </div>
                             <p className="text-red-500">{fields.barcode.errors}</p>
                         </div>
                         <div className="flex flex-col gap-3"> 

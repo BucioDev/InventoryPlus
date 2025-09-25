@@ -118,8 +118,8 @@ export default function BarcodeScanner({onDetected}:{onDetected?:(code:string) =
         try {
           const result: Result = await codeReader.current.decodeFromCanvas(displayCanvas);
           const code = result.getText();
-          console.log("Decoded barcode:", code);
           setBarcodeResult(result.getText());
+          
 
           onDetected?.(code);
 
