@@ -13,7 +13,7 @@ export default function AjustesPage() {
             <Button asChild>
                 <Link href="/ajustes/logs">Resgistros de actividad</Link>
             </Button>
-            <BarcodeScanner />
+            <BarcodeScanner onDetected={(code) => setBarcode(code)} />
             <Input type="text" placeholder="Codigo de barras" 
             value={barcode}
             onChange={(e) => setBarcode(e.target.value)}/>
