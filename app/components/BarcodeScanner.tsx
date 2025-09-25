@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 const DESIRED_CROP_ASPECT_RATIO = 3 / 2;
 const CROP_SIZE_FACTOR = 0.4;
 
-export default function BarcodeScanner() {
+export default function BarcodeScanner({onDetected}:{onDetected?:(code:string) => void}) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const displayCroppedCanvasRef = useRef<HTMLCanvasElement>(null);
   const cropOverlayRef = useRef<HTMLDivElement>(null);
@@ -117,8 +117,13 @@ export default function BarcodeScanner() {
       const decodeCanvas = async () => {
         try {
           const result: Result = await codeReader.current.decodeFromCanvas(displayCanvas);
-          console.log("Decoded barcode:", result.getText());
+          const code = result.getText();
+          console.log("Decoded barcode:", code);
           setBarcodeResult(result.getText());
+
+          onDetected?.(code);
+
+          setOpen(false);
         } catch (err: unknown) {
            if (err instanceof Error && err.name !== "NotFoundException") {
                 console.error("Decoding error:", err);
