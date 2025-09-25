@@ -152,6 +152,15 @@ export default function CreateProductPage() {
                             <p className="text-red-500">{fields.stock.errors}</p>
                         </div>
                         <div className="flex flex-col gap-3"> 
+                            <Label>Cantidad para alerta del producto</Label>
+                            <p className="text-xs text-gray-500">Recuerde que si el stock del producto es menor a esta cantidad, se enviara un mensaje de alerta</p>
+                            <Input type="number" placeholder="15"
+                            key={fields.alertammount.key}
+                            name={fields.alertammount.name}
+                            defaultValue={fields.alertammount.initialValue}/>
+                            <p className="text-red-500">{fields.alertammount.errors}</p>
+                        </div>
+                        <div className="flex flex-col gap-3"> 
                             <Label>Precio de compra del producto</Label>
                             <p className="text-xs text-gray-500">Precio al que se compro el producto</p>
                             <Input type="number" placeholder="15"

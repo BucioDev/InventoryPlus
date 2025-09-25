@@ -7,7 +7,6 @@ import { parseWithZod } from "@conform-to/zod/v4";
 import { categorySchema, loginSchema, productSchema, userSchema, userSchemaWithoutPass } from "./lib/zodSchemas";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
-import { toast } from "sonner";
 
 
 const saltRounds = 12;
@@ -346,6 +345,7 @@ export async function createProduct(prevState: unknown, formData:FormData){
             location:submission.value.location,
             variant:submission.value.variant || "",
             stock:submission.value.stock,
+            alertammount:submission.value.alertammount,
             sellprice:submission.value.sellprice,
             buyprice:submission.value.buyprice,
         }
@@ -389,6 +389,7 @@ export async function editProduct(prevState: any, formData:FormData){
             location:submission.value.location,
             variant:submission.value.variant || "",
             stock:submission.value.stock,
+            alertammount:submission.value.alertammount,
             sellprice:submission.value.sellprice,
             buyprice:submission.value.buyprice,
         }

@@ -50,6 +50,7 @@ model Product {
   location      String
   variant       String
   stock         Int
+  alertammount  Int
   sellprice     Float
   buyprice      Float
   isDeleted     Boolean  @default(false)
@@ -64,6 +65,21 @@ model Category {
   isDeleted   Boolean   @default(false)
   createdAt   DateTime  @default(now())
   Product     Product[]
+}
+
+model Sucursales {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  use         Use
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+enum Use {
+  tienda
+  almacen
+  taller
 }
 
 enum Role {

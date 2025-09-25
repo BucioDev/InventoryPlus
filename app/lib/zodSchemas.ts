@@ -37,6 +37,7 @@ export const productSchema = z.object({
     location: z.string("Ubicacion es requerida").min(4,"Ubicacion es requerida"),
     variant: z.string().optional(),
     stock: z.number("Cantidad es requerida"),
+    alertammount: z.number("Cantida para alerta es requerida"),
     sellprice: z.number("Precio de venta es requerido"),
     buyprice: z.number("Precio de compra es requerido"),
 })

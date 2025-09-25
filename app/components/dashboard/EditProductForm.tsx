@@ -36,6 +36,7 @@ interface EditProductFormProps {
         location:string,
         variant:string,
         stock:number,
+        alertammount:number,
         sellprice:number,
         buyprice:number,
         images:string[],
@@ -103,7 +104,6 @@ export default function EditProductForm({data}:EditProductFormProps) {
                             <Input type="text" placeholder=""
                             key={fields.barcode.key}
                             name={fields.barcode.name}
-                            defaultValue={data.barcode}
                             value={barcode}
                             onChange={(e) => setBarcode(e.target.value)}/>
                             <div className="flex md:hidden">
@@ -166,6 +166,15 @@ export default function EditProductForm({data}:EditProductFormProps) {
                             name={fields.stock.name}
                             defaultValue={data.stock}/>
                             <p className="text-red-500">{fields.stock.errors}</p>
+                        </div>
+                        <div className="flex flex-col gap-3"> 
+                            <Label>Cantidad para alerta del producto</Label>
+                            <p className="text-xs text-gray-500">Recuerde que si el stock del producto es menor a esta cantidad, se enviara un mensaje de alerta</p>
+                            <Input type="number" placeholder="15"
+                            key={fields.alertammount.key}
+                            name={fields.alertammount.name}
+                            defaultValue={data.alertammount}/>
+                            <p className="text-red-500">{fields.alertammount.errors}</p>
                         </div>
                         <div className="flex flex-col gap-3"> 
                             <Label>Precio de compra del producto</Label>

@@ -47,6 +47,7 @@ interface TagInputProps {
                 addTag();
               }
             }}
+            onBlur={addTag}
             className="flex-1 min-w-[100px] outline-none"
             placeholder={placeholder ?? "Escribe una marca y presiona enter"}
           />
