@@ -41,3 +41,18 @@ export const productSchema = z.object({
     sellprice: z.number("Precio de venta es requerido"),
     buyprice: z.number("Precio de compra es requerido"),
 })
+
+export const sucursalSchema = z.object({
+    name: z.string("Nombre de la sucursal es requerido"),
+    description: z.string().optional(),
+    use: z.enum(["tienda","almacen","taller"],"Debe asignar un rol"),
+})
+
+export const proveedoresSchema = z.object({
+    companyName: z.string("Nombre de la compañia requerido"),
+    companyPhone: z.string().optional(),
+    companyEmail: z.string().optional(),
+    contactName: z.string("Si no tiene nombre puede agregar un apodo"),
+    contactPhone: z.string().optional(),
+    contactEmail: z.string().optional(),
+})

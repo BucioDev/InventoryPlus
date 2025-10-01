@@ -4,7 +4,7 @@ import { sessionOptions, SessionData, defaultSession } from "./lib";
 import { cookies } from "next/headers";
 import prisma from "./lib/prisma";
 import { parseWithZod } from "@conform-to/zod/v4";
-import { categorySchema, loginSchema, productSchema, userSchema, userSchemaWithoutPass } from "./lib/zodSchemas";
+import { categorySchema, loginSchema, productSchema, proveedoresSchema, sucursalSchema, userSchema, userSchemaWithoutPass } from "./lib/zodSchemas";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 
@@ -98,7 +98,7 @@ export async function logout(){
     redirect("/login");
 }
 
-
+//------------------------------------User Actions -------------------------------------
 export async function createUser(prevState: unknown, formData:FormData){
 
     const session = await getSesion();
@@ -216,7 +216,7 @@ export async function changePassword(formData:FormData){
     redirect("/usuarios");
 }
 
-
+//------------------------------------log Actions -------------------------------------
 async function createLog(userId:string, action:string){
     await prisma.log.create({
         data:{
@@ -227,7 +227,7 @@ async function createLog(userId:string, action:string){
 }
 
 
-
+//------------------------------------Category Actions -------------------------------------
 export async function createCategory(prevState: unknown, formData:FormData){
 
     const session = await getSesion();
@@ -311,7 +311,7 @@ export async function DeleteCategory(formData:FormData){
     redirect("/inventario?action=deleted&entity=categoria");
 }
 
-
+//------------------------------------Product Actions -------------------------------------
 export async function createProduct(prevState: unknown, formData:FormData){
 
     const session = await getSesion();
@@ -421,4 +421,187 @@ export async function DeleteProduct(formData:FormData){
     await createLog(session.userId as string, `Elimino la Categoria ${formData.get("name")}`);
 
     redirect("/inventario?action=deleted&entity=producto");
+}
+
+
+
+//------------------------------------Sucursal Actions -------------------------------------
+
+export async function createSucursal(prevState: unknown, formData:FormData){
+
+    const session = await getSesion();
+
+    if(session.role !== "admin"){
+        redirect("/")
+    }
+
+    const submission = parseWithZod(formData,{
+        schema:sucursalSchema
+    });
+
+    if(submission.status !== "success"){
+        return submission.reply();
+    }
+
+
+    await prisma.sucursales.create({
+        data:{
+            name:submission.value.name,
+            description:submission.value.description || "",
+            use:submission.value.use,
+        }
+    })
+
+    await createLog(session.userId as string, `Creo una nueva Sucursal ${submission.value.name}`);
+
+    redirect("/sucursales?action=created&entity=surcursal");
+}
+
+
+export async function editSucursal(prevState: any, formData:FormData){
+
+    const session = await getSesion();
+
+    if(session.role !== "admin"){
+        redirect("/")
+    }
+
+    const submission = parseWithZod(formData, {schema:sucursalSchema});
+    if(submission.status !== "success"){
+        return submission.reply();
+    }
+
+    const id = formData.get("id") as string;
+
+    await prisma.sucursales.update({
+        where:{
+            id:id,
+        },
+        data:{
+            name:submission.value.name,
+            description:submission.value.description || "",
+            use:submission.value.use,
+        }
+    })
+
+    await createLog(session.userId as string, `Edito los datos de la Sucursal ${submission.value.name}`);
+
+    redirect("/sucursales?action=updated&entity=sucursal");
+}
+
+export async function DeleteSucursal(formData:FormData){
+
+    const session = await getSesion();
+
+    if(session.role !== "admin"){
+        redirect("/")
+    }
+
+    const id = formData.get("id") as string;
+
+    await prisma.sucursales.update({
+        where:{
+            id:id,
+        },
+        data:{
+            isDeleted:true,
+        }
+    })
+    await createLog(session.userId as string, `Elimino la Sucursal ${formData.get("name")}`);
+
+    redirect("/sucursales?action=deleted&entity=sucursal");
+}
+
+
+//------------------------------------Proveedores Actions -------------------------------------
+
+export async function createProveedor(prevState: unknown, formData:FormData){
+
+    const session = await getSesion();
+
+    if(session.role !== "admin"){
+        redirect("/")
+    }
+
+    const submission = parseWithZod(formData,{
+        schema:proveedoresSchema
+    });
+
+    if(submission.status !== "success"){
+        return submission.reply();
+    }
+
+
+    await prisma.proveedores.create({
+        data:{
+            companyName:submission.value.companyName,
+            companyPhone:submission.value.companyPhone || "",
+            companyEmail:submission.value.companyEmail || "",
+            contactName: submission.value.contactName,
+            contactPhone: submission.value.contactPhone || "",
+            contactEmail: submission.value.contactEmail || "",
+        }
+    })
+
+    await createLog(session.userId as string, `Creo una nueva Sucursal ${submission.value.companyName}`);
+
+    redirect("/proveedores?action=created&entity=proveedor");
+}
+
+
+export async function editProveedor(prevState: any, formData:FormData){
+
+    const session = await getSesion();
+
+    if(session.role !== "admin"){
+        redirect("/")
+    }
+
+    const submission = parseWithZod(formData, {schema:proveedoresSchema});
+    if(submission.status !== "success"){
+        return submission.reply();
+    }
+
+    const id = formData.get("id") as string;
+
+    await prisma.proveedores.update({
+        where:{
+            id:id,
+        },
+        data:{
+            companyName:submission.value.companyName,
+            companyPhone:submission.value.companyPhone || "",
+            companyEmail:submission.value.companyEmail || "",
+            contactName: submission.value.contactName,
+            contactPhone: submission.value.contactPhone || "",
+            contactEmail: submission.value.contactEmail || "",
+        }
+    })
+
+    await createLog(session.userId as string, `Edito los datos de la Sucursal ${submission.value.companyName}`);
+
+    redirect("/proveedores?action=updated&entity=Proveedor");
+}
+
+export async function DeleteProveedor(formData:FormData){
+
+    const session = await getSesion();
+
+    if(session.role !== "admin"){
+        redirect("/")
+    }
+
+    const id = formData.get("id") as string;
+
+    await prisma.proveedores.update({
+        where:{
+            id:id,
+        },
+        data:{
+            isDeleted:true,
+        }
+    })
+    await createLog(session.userId as string, `Elimino la Proveedor ${formData.get("name")}`);
+
+    redirect("/proveedores?action=deleted&entity=proveedor");
 }

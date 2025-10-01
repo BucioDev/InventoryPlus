@@ -4,7 +4,11 @@ import { NextResponse } from "next/server";
 
 
 export async function GET(){
-    const categorias = await prisma.category.findMany({
+    const categorias = await prisma.sucursales.findMany({
+        select:{
+            id:true,
+            name:true,
+        },
         where:{
             isDeleted:false,
         }

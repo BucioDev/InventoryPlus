@@ -23,6 +23,11 @@ type Category = {
     name: string;
   };
 
+  type Sucursal = {
+    id: string;
+    name: string;
+  };
+
 export default function CreateProductPage() {
 
     const [barcode, setBarcode] = useState("");
@@ -30,6 +35,7 @@ export default function CreateProductPage() {
     const [images, setImages] = useState<string[]>([]);
     //fetching categories
     const [categorys, setCategorys] = useState<Category[]>([]);
+    const [sucursales, setSucursales] = useState<Sucursal[]>([]);
 
     useEffect(() => {
         const fetchCategorys = async () => {
@@ -37,7 +43,14 @@ export default function CreateProductPage() {
             const data: Category[] = await res.json();
             setCategorys(data)
         };
-        fetchCategorys();
+
+        const fetchSucursales = async () => {
+            const res = await fetch("/api/sucursales");
+            const data: Sucursal[] = await res.json();
+            setSucursales(data)
+        };
+
+        fetchCategorys().then(fetchSucursales);
     }, [])
 
     const [lastResult, action] = useActionState(createProduct, undefined);
@@ -128,10 +141,16 @@ export default function CreateProductPage() {
                         </div>
                         <div className="flex flex-col gap-3"> 
                             <Label>Lugar donde se encuentra el producto</Label>
-                            <Input type="text" placeholder="Taller"
-                            key={fields.location.key}
-                            name={fields.location.name}
-                            defaultValue={fields.location.initialValue}/>
+                            <Select key={fields.location.key} name={fields.location.name} defaultValue={fields.location.initialValue}> 
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecciona una categoria" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {sucursales.map((sucursal) =>(
+                                        <SelectItem key={sucursal.id} value={sucursal.name}>{sucursal.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                             <p className="text-red-500">{fields.location.errors}</p>
                         </div>
                         <div className="flex flex-col gap-3"> 
