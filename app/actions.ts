@@ -935,3 +935,16 @@ async function createNotification(message:string){
         }
     })
 }
+
+export async function MarkAsRead(formData:FormData){
+
+    const id = formData.get("id") as string;
+    await prisma.notifications.update({
+        where:{
+            id:id
+        },
+        data:{
+            read:true
+        }
+    })
+}

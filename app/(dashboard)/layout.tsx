@@ -1,19 +1,14 @@
 "use client"
 import React, { ReactNode, Suspense } from "react"
 import Navbar from "../components/dashboard/Navbar"
-import { usePathname } from "next/navigation"
 import { Toaster } from "@/components/ui/sonner";
 import { ToastHandler } from "../components/ToastHandler";
 
 export default function DashboardLayout({children}:{children:ReactNode}){
 
-    const location = usePathname();
-    const hideNavbarRoutes =["/login"];
-
-    const shouldHideNavbar = hideNavbarRoutes.includes(location);
     return(
         <>
-        {!shouldHideNavbar && <Navbar />}
+        <Navbar />
         <Toaster richColors  position="top-center" />
         <Suspense>
         <ToastHandler />
