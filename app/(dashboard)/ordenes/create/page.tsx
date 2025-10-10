@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useForm } from "@conform-to/react";
+import { SubmissionResult, useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod/v4";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
@@ -56,7 +56,7 @@ export default function CreateOrderPage(){
         const [lastResult, action] = useActionState(createOrder, undefined);
 
         const [form, fields] = useForm({
-        lastResult,
+        lastResult: lastResult as SubmissionResult | undefined,
         onValidate({ formData }) {
             return parseWithZod(formData, { schema: orderSchema });
         },

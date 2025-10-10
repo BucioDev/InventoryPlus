@@ -9,6 +9,7 @@ import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { ArrowUpWideNarrow } from "lucide-react";
 import { tr } from "zod/v4/locales";
+import { SubmissionResult } from "@conform-to/react";
 
 
 const saltRounds = 12;
@@ -639,15 +640,18 @@ export async function DeleteProveedor(formData:FormData){
 
 //------------------------------------Order Actions - esta seccion tiene comentarios ya que cada acciones hace multiples mas acciones -------------------------------------
 
-export async function createOrder(prevState: unknown, formData: FormData) {
+export async function createOrder(prevState: unknown, formData: FormData): Promise<SubmissionResult | void> {
 
     const session = await getSesion();
-
-    if(session.role !== "admin"){
-        redirect("/")
-    }
-  const submission = parseWithZod(formData, { schema: orderSchema });
-  if (submission.status !== "success") return submission;
+  
+    if (session.role !== "admin") redirect("/");
+  
+    const submission = parseWithZod(formData, { schema: orderSchema });
+    if (submission.status !== "success")  
+        return {
+        ...submission,
+        error: submission.error ?? undefined,
+      };
 
   const { nickname, status, items } = submission.value;
   const total = items.reduce(
@@ -685,6 +689,7 @@ for (const item of items) {
 
 if (stockErrors.length > 0) {
   redirect("/ordenes?error=Stock insuficiente en uno o más productos")
+  return;
 }
 
                         //creating order  and summing the total of all products
@@ -741,13 +746,13 @@ if (lowStock.length > 0) {
   const productNames = lowStock.map(p => p.name).join(", ");
   //TODO: change this redirect for creting a notificacion that can be seen at any moment, for ease of access
   await createNotification(`Stock bajo en  los productos: ${productNames}`);
-  redirect(`/ordenes?error=Stock bajo en: ${productNames}`);
 }
 
 
   await createLog(session.userId as string, `Creo una Orden para ${formData.get("name")}`);
 
     redirect("/ordenes?action=created&entity=orden");
+    return
 
 }
 
@@ -860,7 +865,6 @@ if (lowStock.length > 0) {
   const productNames = lowStock.map(p => p.name).join(", ");
   //TODO: change this redirect for creting a notificacion that can be seen at any moment, for ease of access 
    await createNotification(`Stock bajo en los productos: ${productNames}`);
-  redirect(`/ordenes?error=Stock bajo en: ${productNames}`);
 }
     await createLog(session.userId as string, `Actualizo la Orden para ${formData.get("name")}`);
 

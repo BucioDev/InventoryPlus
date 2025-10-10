@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useForm } from "@conform-to/react";
+import { SubmissionResult, useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod/v4";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
@@ -74,13 +74,13 @@ export default function EditOrderForm({data}: EditOrderProps){
         const [lastResult, action] = useActionState(editOrder, undefined);
 
         const [form, fields] = useForm({
-        lastResult,
-        onValidate({ formData }) {
-            return parseWithZod(formData, { schema: orderSchema });
-        },
-        shouldValidate: "onBlur",
-        shouldRevalidate: "onInput",
-        });
+                lastResult: lastResult as SubmissionResult | undefined,
+                onValidate({ formData }) {
+                    return parseWithZod(formData, { schema: orderSchema });
+                },
+                shouldValidate: "onBlur",
+                shouldRevalidate: "onInput",
+                });
     
         // Apply debounce to barcode and location
         const debouncedBarcode = useDebounce(barcode, 500);   // waits 500ms after typing
