@@ -54,6 +54,8 @@ model Product {
   sellprice     Float
   buyprice      Float
   isDeleted     Boolean  @default(false)
+
+  orderItems   OrderItem[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
@@ -89,6 +91,41 @@ model Proveedores {
   createdAt   DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+}
+
+model Order{
+  id        String @id @default(uuid())
+  nickname  String
+  total     Float
+  orderPrice Float
+  items      OrderItem[]
+  status     Status
+  sellDate  DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OrderItem {
+  id      String @id @default(uuid())
+  orderId String
+  order   Order @relation(fields: [orderId],references: [id])
+  productId String
+  product Product @relation(fields: [productId], references: [id])
+  quantity Int
+  priceAtSale Float
+}
+
+model Notifications{
+  id    String @id @default(uuid())
+  message String 
+  read   Boolean @default(false)
+  createdAt DateTime @default(now())
+}
+
+enum Status {
+  activo
+  completada
+  cancelado
 }
 
 enum Use {

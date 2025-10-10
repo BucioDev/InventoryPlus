@@ -4,9 +4,11 @@ import { sessionOptions, SessionData, defaultSession } from "./lib";
 import { cookies } from "next/headers";
 import prisma from "./lib/prisma";
 import { parseWithZod } from "@conform-to/zod/v4";
-import { categorySchema, loginSchema, productSchema, proveedoresSchema, sucursalSchema, userSchema, userSchemaWithoutPass } from "./lib/zodSchemas";
+import { categorySchema, loginSchema, orderSchema, productSchema, proveedoresSchema, sucursalSchema, userSchema, userSchemaWithoutPass } from "./lib/zodSchemas";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
+import { ArrowUpWideNarrow } from "lucide-react";
+import { tr } from "zod/v4/locales";
 
 
 const saltRounds = 12;
@@ -421,7 +423,35 @@ export async function DeleteProduct(formData:FormData){
     await createLog(session.userId as string, `Elimino la Categoria ${formData.get("name")}`);
 
     redirect("/inventario?action=deleted&entity=producto");
-}
+ }
+
+export async function AddStock(formData: FormData) {
+
+    const session = await getSesion();
+
+    if (session.role !== "admin") {
+        redirect("/")
+    }
+
+    const id = formData.get("id") as string;
+    const amount = parseInt(formData.get("amount") as string);
+
+    const product = await prisma.product.update({
+        where: {
+            id: id
+        },
+        data: {
+            stock: {
+                increment: amount
+            }
+        }
+    })
+
+    await createLog(session.userId as string, `Agrego mas stock al Producto ${product.name}`);
+
+    redirect("/inventario?action=updated&entity=producto");
+
+} 
 
 
 
@@ -604,4 +634,300 @@ export async function DeleteProveedor(formData:FormData){
     await createLog(session.userId as string, `Elimino la Proveedor ${formData.get("name")}`);
 
     redirect("/proveedores?action=deleted&entity=proveedor");
+}
+
+
+//------------------------------------Order Actions - esta seccion tiene comentarios ya que cada acciones hace multiples mas acciones -------------------------------------
+
+export async function createOrder(prevState: unknown, formData: FormData) {
+
+    const session = await getSesion();
+
+    if(session.role !== "admin"){
+        redirect("/")
+    }
+  const submission = parseWithZod(formData, { schema: orderSchema });
+  if (submission.status !== "success") return submission;
+
+  const { nickname, status, items } = submission.value;
+  const total = items.reduce(
+    (sum, item) => sum + item.quantity * item.priceAtSale,
+    0
+  );
+
+  const productIds = items.map((item) => item.productId);
+
+  const products = await prisma.product.findMany({
+    where: { id: { in: productIds } },
+    select: { id: true, buyprice: true},
+  });
+
+  //check if that we have enough stock before creatign the order
+const stockErrors = [];
+
+for (const item of items) {
+  const product = await prisma.product.findUnique({
+    where: { id: item.productId },
+    select: { stock: true, name:true},
+  });
+
+  if (!product) {
+    stockErrors.push(`Producto ${item.productId} no encontrado.`);
+    continue;
+  }
+
+  if (item.quantity > product.stock) {
+    stockErrors.push(
+      `Cantidad solicitada (${item.quantity}) excede el stock disponible (${product.stock}) para producto ${product.name}.`
+    );
+  }
+}
+
+if (stockErrors.length > 0) {
+  redirect("/ordenes?error=Stock insuficiente en uno o más productos")
+}
+
+                        //creating order  and summing the total of all products
+  const orderPrice = items.reduce((sum, item) => {
+    const product = products.find((p) => p.id === item.productId);
+    const buyPrice = product?.buyprice || 0;
+    return sum + item.quantity * buyPrice;
+  }, 0);
+
+  const orderData = {
+    nickname,
+    status,
+    total,
+    orderPrice,
+    ...(status === "completada" && { sellDate: new Date() }), // Optional sellDate
+    items: {
+      create: items.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        priceAtSale: item.priceAtSale,
+      })),
+    },
+  };
+  const order =  await prisma.order.create({ data: orderData });
+
+  //updating the stock of the products
+let updatedProducts: { id: string; stock: number; alertammount: number, name:string }[] = [];
+
+if (order.status === "completada") {
+  updatedProducts = await Promise.all(
+    items.map((item) =>
+      prisma.product.update({
+        where: { id: item.productId },
+        data: {
+          stock: { decrement: item.quantity },
+        },
+        select: {
+          id: true,
+          stock: true,
+          alertammount: true,
+          name:true
+        },
+      })
+    )
+  );
+}
+
+// checking if low stock alert need to be sent
+const lowStock = updatedProducts.filter(
+  (p) => p.stock <= p.alertammount
+);
+
+if (lowStock.length > 0) {
+  const productNames = lowStock.map(p => p.name).join(", ");
+  //TODO: change this redirect for creting a notificacion that can be seen at any moment, for ease of access
+  await createNotification(`Stock bajo en  los productos: ${productNames}`);
+  redirect(`/ordenes?error=Stock bajo en: ${productNames}`);
+}
+
+
+  await createLog(session.userId as string, `Creo una Orden para ${formData.get("name")}`);
+
+    redirect("/ordenes?action=created&entity=orden");
+
+}
+
+
+export async function editOrder(prevState: any, formData: FormData) {
+   const session = await getSesion();
+
+    if(session.role !== "admin"){
+        redirect("/")
+    }
+
+    const id = formData.get("id") as string;
+
+  const submission = parseWithZod(formData, { schema: orderSchema });
+  if (submission.status !== "success") return submission;
+
+  const { nickname, status, items } = submission.value;
+  const total = items.reduce(
+    (sum, item) => sum + item.quantity * item.priceAtSale,
+    0
+  );
+
+  const productIds = items.map((item) => item.productId);
+
+  const products = await prisma.product.findMany({
+    where: { id: { in: productIds } },
+    select: { id: true, buyprice: true},
+  });
+
+  //check if that we have enough stock before creatign the order
+const stockErrors = [];
+
+for (const item of items) {
+  const product = await prisma.product.findUnique({
+    where: { id: item.productId },
+    select: { stock: true, name:true},
+  });
+
+  if (!product) {
+    stockErrors.push(`Producto ${item.productId} no encontrado.`);
+    continue;
+  }
+
+  if (item.quantity > product.stock) {
+    stockErrors.push(
+      `Cantidad solicitada (${item.quantity}) excede el stock disponible (${product.stock}) para producto ${product.name}.`
+    );
+  }
+}
+
+if (stockErrors.length > 0) {
+  redirect("/ordenes?error=Stock insuficiente en uno o más productos")
+}
+
+                        //updating order  and summing the total of all products
+            const orderPrice = items.reduce((sum, item) => {
+                const product = products.find((p) => p.id === item.productId);
+                const buyPrice = product?.buyprice || 0;
+                return sum + item.quantity * buyPrice;
+            }, 0);
+
+                   const order = await prisma.order.update({
+                    where: { id },
+                    data: {
+                        nickname,
+                        status,
+                        total,
+                        orderPrice,
+                        ...(status === "completada" && { sellDate: new Date() }),
+                        
+                        items: {
+                        deleteMany: {}, // ✅ Deletes all related items for this order
+                        create: items.map((item) => ({
+                            productId: item.productId,
+                            quantity: item.quantity,
+                            priceAtSale: item.priceAtSale,
+                        })),
+                        },
+                    },
+                    });
+
+  //updating the stock of the products
+let updatedProducts: { id: string; stock: number; alertammount: number, name:string }[] = [];
+
+if (order.status === "completada") {
+  updatedProducts = await Promise.all(
+    items.map((item) =>
+      prisma.product.update({
+        where: { id: item.productId },
+        data: {
+          stock: { decrement: item.quantity },
+        },
+        select: {
+          id: true,
+          stock: true,
+          alertammount: true,
+          name:true
+        },
+      })
+    )
+  );
+}
+
+// checking if low stock alert need to be sent
+const lowStock = updatedProducts.filter(
+  (p) => p.stock <= p.alertammount
+);
+
+if (lowStock.length > 0) {
+  const productNames = lowStock.map(p => p.name).join(", ");
+  //TODO: change this redirect for creting a notificacion that can be seen at any moment, for ease of access 
+   await createNotification(`Stock bajo en los productos: ${productNames}`);
+  redirect(`/ordenes?error=Stock bajo en: ${productNames}`);
+}
+    await createLog(session.userId as string, `Actualizo la Orden para ${formData.get("name")}`);
+
+    redirect("/ordenes?action=updated&entity=orden");
+}
+
+
+export async function RefundOrder(formData:FormData){
+     const session = await getSesion();
+
+    if(session.role !== "admin" && session.role !== "user" ){
+        redirect("/")
+    }
+
+    const orderId = formData.get("id") as string;
+
+    const order = await prisma.order.findUnique({
+        where:{id:orderId},
+        select:{
+            status:true,
+            nickname:true,
+            items:{
+                select:{
+                    productId:true,
+                    quantity:true
+                }
+            }
+        }
+    })
+
+    if(order?.status !== "completada"){
+        redirect("/ordenes?error=La orden no fue completada, no es necesario hacer reembolso")
+    }
+
+    await prisma.order.update({
+        where:{id:orderId},
+        data:{status: "cancelado"}
+    })
+
+    await Promise.all(
+        order.items.map((item)=>
+             prisma.product.update({
+                where:{id:item.productId},
+                data:{
+                    stock:{
+                        increment:item.quantity
+                    }
+                }
+            })
+        )
+    )
+
+    await createLog(session.userId as string, `Reembolso la Orden para ${order.nickname}`);
+
+    redirect("/ordenes?action=updated&entity=orden");
+
+}
+
+
+
+//---------------------------------------- Notifications Actiions ------------------------------------------
+
+async function createNotification(message:string){
+
+    await prisma.notifications.create({
+        data:{
+            message:message
+        }
+    })
 }

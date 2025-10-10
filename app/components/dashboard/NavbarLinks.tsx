@@ -17,21 +17,26 @@ const links = [
     },
     {
         id:2,
+        name: "Ordenes",
+        href: "/ordenes",
+    },
+    {
+        id:3,
         name:"Usuarios",
         href: "/usuarios",
     },
     {
-        id:3,
+        id:4,
         name:"Proveedores",
         href: "/proveedores",
     },
     {
-        id:4,
+        id:5,
         name:"Sucursales",
         href: "/sucursales",
     },
     {
-        id:5,
+        id:6,
         name:"Ajustes",
         href: "/ajustes",
     }

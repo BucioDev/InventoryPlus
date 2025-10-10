@@ -1,4 +1,5 @@
 "use client"
+import AddStockForm from "@/app/components/dashboard/AddStockForm";
 import { ToastHandler } from "@/app/components/ToastHandler";
 import prisma from "@/app/lib/prisma";
 import { Button } from "@/components/ui/button";
@@ -173,6 +174,7 @@ export default function InventarioPage() {
                                             <DropdownMenuSeparator/>
                                             <DropdownMenuItem asChild><Link href={`/inventario/productos/${product.id}`}>Editar</Link></DropdownMenuItem>
                                             <DropdownMenuItem asChild><Link href={`/inventario/productos/${product.id}/delete`}>Eliminar</Link></DropdownMenuItem>
+                                            <DropdownMenuItem asChild><AddStockForm productId={product.id} productName={product.name}/></DropdownMenuItem>
                                         </DropdownMenuContent>
                                         </DropdownMenu>
                                         </TableCell>

@@ -56,3 +56,15 @@ export const proveedoresSchema = z.object({
     contactPhone: z.string().optional(),
     contactEmail: z.string().optional(),
 })
+
+export const orderItemSchema = z.object({
+  productId: z.string().min(1),
+  quantity: z.coerce.number().min(1),
+  priceAtSale: z.coerce.number().min(0),
+});
+
+export const orderSchema = z.object({
+  nickname: z.string().min(1, "El nombre es requerido"),
+  status: z.enum(["activo", "completada", "cancelado"],"Se debe seleccionar una opcion"),
+  items: z.array(orderItemSchema).min(1, "Debes agregar al menos un producto"),
+});

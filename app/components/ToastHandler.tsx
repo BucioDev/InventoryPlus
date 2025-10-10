@@ -5,15 +5,16 @@ import { useEffect, useRef } from "react"
 import { toast } from "sonner"
 
 export function ToastHandler() {
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const lastParams = useRef<string | null>(null)
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const lastParams = useRef<string | null>(null);
+  const lastError = useRef<string | null>(null);
 
   useEffect(() => {
-    const action = searchParams.get("action") // created | updated | deleted
-    const entity = searchParams.get("entity") // usuario | categoria | producto
+    const action = searchParams.get("action"); // created | updated | deleted
+    const entity = searchParams.get("entity"); // usuario | categoria | producto
 
-    if (!action || !entity) return
+    if (!action || !entity) return;
 
     // Create a unique key for the current toast
     const paramsKey = `${action}-${entity}`
@@ -43,9 +44,40 @@ export function ToastHandler() {
     router.replace(newUrl)
   }, [searchParams, router])
 
+
+  useEffect(() => {
+    const error = searchParams.get("error");
+    if (!error) return;
+
+    if (lastError.current === error) return;
+    lastError.current = error;
+
+    toast.error(error);
+    router.replace(window.location.pathname);
+  }, [searchParams, router]);
+
+
   return null
 }
 
 function capitalize(str: string) {
   return str.charAt(0).toUpperCase() + str.slice(1)
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
