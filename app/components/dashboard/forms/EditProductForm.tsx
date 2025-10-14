@@ -212,7 +212,7 @@ export default function EditProductForm({data}:EditProductFormProps) {
                             defaultValue={data.sellprice}/>
                             <p className="text-red-500">{fields.sellprice.errors}</p>
                         </div>
-                        <div className="flex flex-col gap-3">
+                        <div className="flex flex-col gap-3 min-h-[200px]">
                         <Label>Images</Label>
                         <input type="hidden" value={images} key={fields.images.key} name={fields.images.name} defaultValue={fields.images.initialValue as any} />
                         {images.length > 0 ? (

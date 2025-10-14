@@ -1,14 +1,12 @@
 
-import { getSesion, isLoggedIn } from "@/app/actions";
+import { getSesion } from "@/app/actions";
 import prisma from "@/app/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { get } from "http";
 import {  MoreHorizontal, PlusCircle } from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 async function getUsers(){
     const data = await prisma.user.findMany({
