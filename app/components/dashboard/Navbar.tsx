@@ -5,8 +5,8 @@ import MobileNavBar from "./MobileNavBar";
 
 
 
-export default function Navbar() {
 
+export default  function Navbar() {
     return (
         <div className="w-full max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex items-center justify-between bg-black text-white rounded-b-lg">
             <div className="hidden md:flex md:items-center">

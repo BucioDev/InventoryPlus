@@ -5,18 +5,18 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod/v4";
 import { useActionState, useEffect, useState } from "react";
-import { SubmitButton } from "../SubmitButtons";
 import { UploadDropzone } from "@/app/lib/uploadthing";
 import { ChevronLeft, XIcon } from "lucide-react";
 import Image from "next/image";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { TagInput } from "../TagsInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { da } from "zod/v4/locales";
-import BarcodeScanner from "../BarcodeScanner";
+import BarcodeScanner from "../../BarcodeScanner";
+import { TagInput } from "../../TagsInput";
+import { SubmitButton } from "../../SubmitButtons";
 
 
 type Category = {
@@ -156,7 +156,7 @@ export default function EditProductForm({data}:EditProductFormProps) {
                         </div>
                         <div className="flex flex-col gap-3"> 
                             <Label>Lugar donde se encuentra el producto</Label>
-                            <Select key={fields.location.key} name={fields.location.name} defaultValue={fields.location.initialValue}> 
+                            <Select key={fields.location.key} name={fields.location.name} defaultValue={data.location}> 
                                 <SelectTrigger>
                                     <SelectValue placeholder="Selecciona una categoria" />
                                 </SelectTrigger>

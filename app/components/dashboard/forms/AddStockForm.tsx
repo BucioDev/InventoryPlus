@@ -4,8 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useEffect } from "react";
-import { SubmitButton } from "../SubmitButtons";
 import { AddStock } from "@/app/actions";
+import { SubmitButton } from "../../SubmitButtons";
 
 
 

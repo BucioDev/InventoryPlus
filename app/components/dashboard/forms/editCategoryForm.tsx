@@ -5,13 +5,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ChevronLeft } from "lucide-react"
 import Link from "next/link"
-import { SubmitButton } from "../SubmitButtons"
 import { useActionState, useEffect } from "react"
 import { useForm } from "@conform-to/react"
 import { categorySchema } from "@/app/lib/zodSchemas"
 import { parseWithZod } from "@conform-to/zod/v4"
 import { editCategory } from "@/app/actions"
 import { toast } from "sonner"
+import { SubmitButton } from "../../SubmitButtons"
 
 
 interface EditCategoryFormProps {

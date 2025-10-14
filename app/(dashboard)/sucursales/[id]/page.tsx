@@ -1,4 +1,5 @@
-import EditSucursalForm from "@/app/components/dashboard/editSucursalForm";
+
+import EditSucursalForm from "@/app/components/dashboard/forms/editSucursalForm";
 import prisma from "@/app/lib/prisma"
 import { notFound } from "next/navigation"
 

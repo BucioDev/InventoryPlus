@@ -1,4 +1,4 @@
-import EditProveedorForm from "@/app/components/dashboard/editProveedorForm";
+import EditProveedorForm from "@/app/components/dashboard/forms/editProveedorForm";
 import prisma from "@/app/lib/prisma";
 import { notFound } from "next/navigation";
 

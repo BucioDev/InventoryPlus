@@ -9,11 +9,11 @@ import { parseWithZod } from "@conform-to/zod/v4";
 import { ChevronLeft, XIcon } from "lucide-react";
 import Link from "next/link";
 import { useActionState, useState } from "react";
-import { SubmitButton } from "../SubmitButtons";
 import { editUser } from "@/app/actions";
 import { useForm } from "@conform-to/react";
 import { UploadDropzone } from "@/app/lib/uploadthing";
 import Image from "next/image";
+import { SubmitButton } from "../../SubmitButtons";
 
 
 interface EditUserFormProps {

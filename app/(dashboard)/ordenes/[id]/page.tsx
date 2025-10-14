@@ -1,5 +1,4 @@
-import EditOrderForm from "@/app/components/dashboard/EditOrderForm";
-import EditProductForm from "@/app/components/dashboard/EditProductForm";
+import EditOrderForm from "@/app/components/dashboard/forms/EditOrderForm";
 import prisma from "@/app/lib/prisma";
 import { notFound } from "next/navigation";
 import { resourceUsage } from "process";

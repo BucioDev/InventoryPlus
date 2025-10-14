@@ -1,5 +1,5 @@
 "use client"
-import AddStockForm from "@/app/components/dashboard/AddStockForm";
+import AddStockForm from "@/app/components/dashboard/forms/AddStockForm";
 import { ToastHandler } from "@/app/components/ToastHandler";
 import prisma from "@/app/lib/prisma";
 import { Button } from "@/components/ui/button";

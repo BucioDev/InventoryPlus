@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { isLoggedIn } from "../actions";
 import { DashboardStats } from "../components/dashboard/DashboardStats";
 import { RecentOrders } from "../components/dashboard/RecentOrders";
+import SalesChart from "../components/dashboard/SalesChart";
 
 
 
@@ -19,7 +20,7 @@ export default async function Dashboard() {
                         <CardDescription></CardDescription>
                     </CardHeader>
                     <CardContent>
-                        Grafica aqui
+                        <SalesChart />
                     </CardContent>
                 </Card>
                 <RecentOrders/>

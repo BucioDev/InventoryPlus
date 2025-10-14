@@ -1,4 +1,5 @@
-import EditUserForm from "@/app/components/dashboard/editUserForm";
+
+import EditUserForm from "@/app/components/dashboard/forms/editUserForm";
 import prisma from "@/app/lib/prisma";
 import { notFound } from "next/navigation";
 

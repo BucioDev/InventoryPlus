@@ -1,5 +1,5 @@
 
-import EditCategoryForm from "@/app/components/dashboard/editCategoryForm";
+import EditCategoryForm from "@/app/components/dashboard/forms/editCategoryForm";
 import prisma from "@/app/lib/prisma";
 import { notFound } from "next/navigation";
 

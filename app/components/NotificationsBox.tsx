@@ -26,7 +26,7 @@ export default function NotificationBox(){
         };
       
         fetchNotifications(); 
-        const interval = setInterval(fetchNotifications, 10000); 
+        const interval = setInterval(fetchNotifications, 1000); 
       
         return () => {
           active = false;

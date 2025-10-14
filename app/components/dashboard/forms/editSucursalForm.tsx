@@ -12,7 +12,7 @@ import { parseWithZod } from "@conform-to/zod/v4";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useActionState } from "react";
-import { SubmitButton } from "../SubmitButtons";
+import { SubmitButton } from "../../SubmitButtons";
 
 
 interface EditSucursalFormProps {
