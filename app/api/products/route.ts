@@ -8,6 +8,7 @@ export async function GET(req: Request) {
   const barcode = searchParams.get("barcode") || "";
   const location = searchParams.get("location") || "";
   const compatibility = searchParams.getAll("compatibility");
+  const name = searchParams.get("name") || "";
 
   try {
     const products = await prisma.product.findMany({
@@ -32,6 +33,7 @@ export async function GET(req: Request) {
       where: {
         AND: [
           barcode ? { barcode: { contains: barcode, mode: "insensitive" } } : {},
+          name ? { name: { contains: name, mode: "insensitive" } } : {},
           location ? { location: { contains: location, mode: "insensitive" } } : {},
           compatibility.length
             ? { compatibility: { hasSome: compatibility.map(c => c.toLowerCase()) } }

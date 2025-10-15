@@ -46,7 +46,8 @@ export default function CreateOrderPage(){
 >([]);
 
 
-    const [barcode, setBarcode] = useState("");
+        const [barcode, setBarcode] = useState("");
+        const [name, setName] = useState("");
         const [location, setLocation] = useState("");
         const [compatibility, setCompatibility] = useState<string[]>([]);
         const [products, setProducts] = useState<any[]>([]);
@@ -64,15 +65,17 @@ export default function CreateOrderPage(){
         shouldRevalidate: "onInput",
         });
     
-        // Apply debounce to barcode and location
-        const debouncedBarcode = useDebounce(barcode, 500);   // waits 500ms after typing
-        const debouncedLocation = useDebounce(location, 500); // waits 500ms after typing
+        // Apply debounce
+        const debouncedBarcode = useDebounce(barcode, 500);   // waits .5s after typing
+        const debounceName = useDebounce(name, 500);
+        const debouncedLocation = useDebounce(location, 500); 
     
         // Fetch products whenever filters change
         useEffect(() => {
             const fetchProducts = async () => {
                 const params = new URLSearchParams();
                 if (debouncedBarcode) params.append("barcode", debouncedBarcode);
+                if (debounceName) params.append("name", debounceName);
                 if (debouncedLocation) params.append("location", debouncedLocation);
                 compatibility.forEach(c => params.append("compatibility", c));
     
@@ -81,7 +84,7 @@ export default function CreateOrderPage(){
                 setProducts(data);
             };
             fetchProducts();
-        }, [debouncedBarcode, debouncedLocation, compatibility]);
+        }, [debouncedBarcode, debounceName, debouncedLocation, compatibility]);
     
         // Add compatibility tag on Enter
         function handleCompatibilityAdd(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -242,6 +245,11 @@ export default function CreateOrderPage(){
                             placeholder="Buscar por Codigo de barras"
                             value={barcode}
                             onChange={e => setBarcode(e.target.value)}
+                        />
+                        <Input
+                            placeholder="Buscar por Nombre del producto"
+                            value={name}
+                            onChange={e => setName(e.target.value)}
                         />
                         <Input
                             placeholder="Buscar por localizacion"
