@@ -8,6 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MoreHorizontal } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -142,12 +143,14 @@ export default function InventarioPage() {
                 <Table>
                     <TableHeader>
                         <TableRow>
+                            <TableHead>Image</TableHead>
                             <TableHead>Nombre</TableHead>
                             <TableHead>Codigo de barras</TableHead>
                             <TableHead>Categoria</TableHead>
                             <TableHead>Compatibilidad</TableHead>
                             <TableHead>Marca</TableHead>
                             <TableHead>Ubicacion</TableHead>
+                            <TableHead>Notas</TableHead>
                             <TableHead>Variante</TableHead>
                             <TableHead>Stock</TableHead>
                             <TableHead>Precio de compra</TableHead>
@@ -158,12 +161,14 @@ export default function InventarioPage() {
                     <TableBody>
                         {products.map((product) => (
                             <TableRow key={product.id}>
+                                <TableCell><Image alt="Imagen del producto" src={product.images[0]} width={64} height={64} className="rounded-md object-cover h-16 w-16"/></TableCell>
                                 <TableCell>{product.name}</TableCell>
                                 <TableCell>{product.barcode}</TableCell>
                                 <TableCell>{product.category.name}</TableCell>
                                 <TableCell>{product.compatibility.join(', ')}</TableCell>
                                 <TableCell>{product.brand}</TableCell>
                                 <TableCell>{product.location}</TableCell>
+                                <TableCell>{product.notes}</TableCell>
                                 <TableCell>{product.variant}</TableCell>
                                 <TableCell>{product.stock}</TableCell>
                                 <TableCell>{product.buyprice}</TableCell>

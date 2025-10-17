@@ -13,10 +13,10 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { da } from "zod/v4/locales";
 import BarcodeScanner from "../../BarcodeScanner";
 import { TagInput } from "../../TagsInput";
 import { SubmitButton } from "../../SubmitButtons";
+import { Textarea } from "@/components/ui/textarea";
 
 
 type Category = {
@@ -38,6 +38,7 @@ interface EditProductFormProps {
         compatibility:string[],
         brand:string,
         location:string,
+        notes:string,
         variant:string,
         stock:number,
         alertammount:number,
@@ -167,6 +168,14 @@ export default function EditProductForm({data}:EditProductFormProps) {
                                 </SelectContent>
                             </Select>
                             <p className="text-red-500">{fields.location.errors}</p>
+                        </div>
+                        <div className="flex flex-col gap-3"> 
+                            <Label>Notas del prouducto</Label>
+                            <Textarea className="w-full" 
+                            id={fields.notes.id}
+                            name={fields.notes.name}
+                            defaultValue={fields.notes.initialValue}/>
+                            <p className="text-red-500">{fields.notes.errors}</p>
                         </div>
                         <div className="flex flex-col gap-3"> 
                             <Label>Variante del product</Label>

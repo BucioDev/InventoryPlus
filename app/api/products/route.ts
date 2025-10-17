@@ -20,6 +20,8 @@ export async function GET(req: Request) {
         compatibility:true,
         brand:true,
         location:true,
+        notes:true,
+        images:true,
         variant:true,
         stock:true,
         sellprice:true,

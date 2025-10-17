@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod/v4";
 import { ChevronLeft, XIcon } from "lucide-react";
@@ -152,6 +153,14 @@ export default function CreateProductPage() {
                                 </SelectContent>
                             </Select>
                             <p className="text-red-500">{fields.location.errors}</p>
+                        </div>
+                        <div className="flex flex-col gap-3"> 
+                            <Label>Notas del prouducto</Label>
+                            <Textarea className="w-full" 
+                            id={fields.notes.id}
+                            name={fields.notes.name}
+                            defaultValue={fields.notes.initialValue}/>
+                            <p className="text-red-500">{fields.notes.errors}</p>
                         </div>
                         <div className="flex flex-col gap-3"> 
                             <Label>Variante del product</Label>

@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { SubmissionResult, useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod/v4";
 import { ChevronLeft } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
 
@@ -148,6 +149,7 @@ export default function CreateOrderPage(){
                                     <Table>
                                     <TableHeader>
                                         <TableRow>
+                                        <TableHead>Imagen</TableHead>
                                         <TableHead>Producto</TableHead>
                                         <TableHead>Cantidad</TableHead>
                                         <TableHead>Precio Unitario</TableHead>
@@ -158,7 +160,9 @@ export default function CreateOrderPage(){
                                     <TableBody>
                                         {selectedProducts.map((item, index) => (
                                         <TableRow key={item.product.id}>
-                                            
+                                            <TableCell>
+                                                <Image alt="Imagen del producto" src={item.product.images[0]} width={64} height={64}
+                                                className="rounded-md object-cover h-16 w-16"/></TableCell>
                                             <TableCell>{item.product.name}</TableCell>
                                             <TableCell>
                                             <Input
@@ -316,7 +320,7 @@ export default function CreateOrderPage(){
                                                 {
                                                 product,
                                                 quantity: 1,
-                                                priceAtSale: product.sellprice, // default to current sell price
+                                                priceAtSale: product.sellprice, // default to current sell price'
                                                 },
                                             ]);
                                             }

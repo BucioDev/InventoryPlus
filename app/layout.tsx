@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Controlplus",
   description: "Administra tus productos de inventario",
+  authors:{name:"Samuel Bucio", url:"https://github.com/BucioDev"},
 };
 
 export default function RootLayout({

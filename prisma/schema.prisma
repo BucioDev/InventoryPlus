@@ -48,6 +48,7 @@ model Product {
   images        String[]
   brand         String
   location      String
+  notes         String?
   variant       String
   stock         Int
   alertammount  Int

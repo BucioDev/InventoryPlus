@@ -35,6 +35,7 @@ export const productSchema = z.object({
     images: z.array(z.string("Imagenes es requerida")).min(1,"Imagenes es requerida"),
     brand: z.string("Marca es requerida").min(4,"Marca es requerida"),
     location: z.string("Ubicacion es requerida").min(4,"Ubicacion es requerida"),
+    notes: z.string().optional(),
     variant: z.string().optional(),
     stock: z.number("Cantidad es requerida"),
     alertammount: z.number("Cantida para alerta es requerida"),
