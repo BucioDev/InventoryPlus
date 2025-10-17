@@ -38,7 +38,7 @@ interface EditProductFormProps {
         compatibility:string[],
         brand:string,
         location:string,
-        notes:string,
+        notes:string | null,
         variant:string,
         stock:number,
         alertammount:number,
