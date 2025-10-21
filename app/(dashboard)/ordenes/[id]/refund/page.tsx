@@ -1,10 +1,8 @@
 import {  DeleteUser, RefundOrder } from "@/app/actions";
 import { DeleteButton } from "@/app/components/SubmitButtons";
-import prisma from "@/app/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 
 
 export default async function refundOrderPage({params}:{params:Promise<{id:string}>}){
@@ -18,7 +16,7 @@ export default async function refundOrderPage({params}:{params:Promise<{id:strin
                     <CardDescription>Esta accion no se puede deshacer, debera crear una nueva orden</CardDescription>
                 </CardHeader>
                 <CardContent className="w-full flex justify-between">
-                    <Button asChild><Link href={`/usuarios`}>Cancelar</Link></Button>
+                    <Button asChild><Link href={`/ordenes`}>Cancelar</Link></Button>
                     <form action={RefundOrder}>
                         <input type="hidden" name="id" value={id} />
                         <DeleteButton text="Eliminar Usuario" />

@@ -5,6 +5,7 @@ import { read } from "fs";
 import { BellIcon } from "lucide-react";
 import { MarkAsRead } from "../actions";
 import { useEffect, useState } from "react";
+import { no } from "zod/v4/locales";
 
 
 type notificaciones = {
@@ -53,14 +54,18 @@ export default function NotificationBox(){
                 {notificiaciones.map((notification) => (
           <DropdownMenuItem key={notification.id} className="flex justify-between">
             <span>
-              {notification.message} — {notification.read ? "Leído" : "No leído"}
+              {notification.message} — 
             </span>
 
             <form action={MarkAsRead}>
               <input type="hidden" name="id" value={notification.id} />
-              <Button type="submit" variant="link" className="p-0 h-auto">
+              {notification.read ? (
+                 <p className="font-bold">Leido</p>
+              ):( 
+                <Button type="submit" variant="link" className="p-0 h-auto text-blue-500">
                 Marcar como leído
               </Button>
+              )}
             </form>
           </DropdownMenuItem>
         ))}
