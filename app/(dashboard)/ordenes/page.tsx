@@ -44,8 +44,9 @@ export default async function OrdenesPage(){
         <div className="flex items-center justify-end mt-5">
          <Button asChild>
             <Link href="/ordenes/create">
-            Crear nueva orden
             <PlusCircle />
+            Agregar nueva orden
+            
             </Link>
          </Button>
         </div>

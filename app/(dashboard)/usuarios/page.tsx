@@ -36,7 +36,7 @@ export default async function UsersPage() {
             <Button asChild className="flex items-center gap-x-2">
                 <Link href="/usuarios/create">
                     <PlusCircle className="h-5 w-5" />
-                    <span>Crear nuevo Usuario</span>
+                    <span>Agregar nuevo Usuario</span>
                 </Link>
             </Button>
         </div>

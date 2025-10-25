@@ -26,7 +26,7 @@ export default async function SucursalesPage() {
             <Button asChild className="flex items-center gap-x-2">
                 <Link href="/sucursales/create">
                     <PlusCircle className="h-5 w-5" />
-                    <span>Crear nueva Sucursal</span>
+                    <span>Agregar nueva Sucursal</span>
                 </Link>
             </Button>
         </div>

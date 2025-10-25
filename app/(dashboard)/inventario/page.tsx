@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, PlusCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -93,8 +93,8 @@ export default function InventarioPage() {
                 <CardTitle>Acciones</CardTitle>
             </CardHeader>
             <CardContent className="flex justify-between">
-                <Button asChild><Link href="/inventario/productos/create">Agregar producto</Link></Button>
-                <Button asChild><Link href="/inventario/categorias/create">Agregar categoria</Link></Button>
+                <Button asChild><Link href="/inventario/productos/create"><PlusCircle/> Agregar producto </Link></Button>
+                <Button asChild><Link href="/inventario/categorias/create"><PlusCircle/> Agregar categoria </Link></Button>
             </CardContent>
         </Card>
     </div>

@@ -27,7 +27,7 @@ export default async function proveedoresPage() {
             <Button asChild>
                 <Link href="/proveedores/create">
                 <PlusCircle/>
-                Crear proveedor
+                Agregar proveedor
                 </Link>
             </Button>
         </div>
