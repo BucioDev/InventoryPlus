@@ -5,9 +5,9 @@ import { RecentOrders } from "../components/dashboard/RecentOrders";
 import SalesChart from "../components/dashboard/SalesChart";
 
 
-
 export default async function Dashboard() {
     const session = await isLoggedIn();
+
 
     return (
         <>

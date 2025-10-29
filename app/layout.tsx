@@ -16,6 +16,10 @@ export const metadata: Metadata = {
   title: "Controlplus",
   description: "Administra tus productos de inventario",
   authors:{name:"Samuel Bucio", url:"https://github.com/BucioDev"},
+  robots:{
+    index: false,
+    follow: false,
+  },
 };
 
 export default function RootLayout({
