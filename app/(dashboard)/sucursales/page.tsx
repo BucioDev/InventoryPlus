@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { MoreHorizontal, PlusCircle } from "lucide-react";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
 
 async function getSucursales(){
     const data = await prisma.sucursales.findMany({

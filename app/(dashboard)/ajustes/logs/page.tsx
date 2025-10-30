@@ -2,6 +2,7 @@ import prisma from "@/app/lib/prisma";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
+export const dynamic = "force-dynamic";
 
 async function getLogs(){
     const data = await prisma.log.findMany({

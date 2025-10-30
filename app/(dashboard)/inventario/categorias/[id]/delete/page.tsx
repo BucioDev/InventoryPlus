@@ -34,7 +34,7 @@ export default async function DeleteCategoryPage({ params}: {params: Promise<{id
                     <CardDescription>Esta accion no se puede deshacer</CardDescription>
                 </CardHeader>
                 <CardFooter className="w-full flex justify-between">
-                    <Button variant="secondary" asChild><Link href="/inventario">Cancel</Link></Button>
+                    <Button variant="secondary" asChild><Link href="/inventario">Cancelar</Link></Button>
                     <form action={DeleteCategory}>
                         <input type="hidden" name="id" value={id} />
                         <input type="hidden" name="name" value={name} />

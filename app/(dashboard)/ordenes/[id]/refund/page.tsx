@@ -19,7 +19,7 @@ export default async function refundOrderPage({params}:{params:Promise<{id:strin
                     <Button asChild><Link href={`/ordenes`}>Cancelar</Link></Button>
                     <form action={RefundOrder}>
                         <input type="hidden" name="id" value={id} />
-                        <DeleteButton text="Eliminar Usuario" />
+                        <DeleteButton text="Reembolsar Orden" />
                     </form>
                 </CardContent>
             </Card>
