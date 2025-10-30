@@ -235,9 +235,10 @@ export async function createCategory(prevState: unknown, formData:FormData){
 
     const session = await getSesion();
 
-    if(session.role !== "admin"){
-        redirect("/")
+    if (session.role !== "admin" && session.role !== "user") {
+    redirect("/");
     }
+
 
     const submission = parseWithZod(formData,{
         schema:categorySchema
@@ -265,8 +266,8 @@ export async function editCategory(prevState: any, formData:FormData){
 
     const session = await getSesion();
 
-    if(session.role !== "admin"){
-        redirect("/")
+    if (session.role !== "admin" && session.role !== "user") {
+    redirect("/");
     }
 
     const submission = parseWithZod(formData, {schema:categorySchema});
@@ -295,8 +296,8 @@ export async function DeleteCategory(formData:FormData){
 
     const session = await getSesion();
 
-    if(session.role !== "admin"){
-        redirect("/")
+    if (session.role !== "admin" && session.role !== "user") {
+    redirect("/");
     }
 
     const id = formData.get("id") as string;
@@ -319,8 +320,8 @@ export async function createProduct(prevState: unknown, formData:FormData){
 
     const session = await getSesion();
 
-    if(session.role !== "admin"){
-        redirect("/")
+    if (session.role !== "admin" && session.role !== "user") {
+    redirect("/");
     }
 
     const submission = parseWithZod(formData,{
@@ -364,8 +365,8 @@ export async function editProduct(prevState: any, formData:FormData){
 
     const session = await getSesion();
 
-    if(session.role !== "admin"){
-        redirect("/")
+    if (session.role !== "admin" && session.role !== "user") {
+    redirect("/");
     }
 
     const submission = parseWithZod(formData, {schema:productSchema});
@@ -409,8 +410,8 @@ export async function DeleteProduct(formData:FormData){
 
     const session = await getSesion();
 
-    if(session.role !== "admin"){
-        redirect("/")
+    if (session.role !== "admin" && session.role !== "user") {
+    redirect("/");
     }
 
     const id = formData.get("id") as string;
@@ -464,8 +465,8 @@ export async function createSucursal(prevState: unknown, formData:FormData){
 
     const session = await getSesion();
 
-    if(session.role !== "admin"){
-        redirect("/")
+    if (session.role !== "admin" && session.role !== "user") {
+    redirect("/");
     }
 
     const submission = parseWithZod(formData,{
@@ -495,8 +496,8 @@ export async function editSucursal(prevState: any, formData:FormData){
 
     const session = await getSesion();
 
-    if(session.role !== "admin"){
-        redirect("/")
+    if (session.role !== "admin" && session.role !== "user") {
+    redirect("/");
     }
 
     const submission = parseWithZod(formData, {schema:sucursalSchema});
@@ -526,8 +527,8 @@ export async function DeleteSucursal(formData:FormData){
 
     const session = await getSesion();
 
-    if(session.role !== "admin"){
-        redirect("/")
+    if (session.role !== "admin" && session.role !== "user") {
+    redirect("/");
     }
 
     const id = formData.get("id") as string;
@@ -552,8 +553,8 @@ export async function createProveedor(prevState: unknown, formData:FormData){
 
     const session = await getSesion();
 
-    if(session.role !== "admin"){
-        redirect("/")
+    if (session.role !== "admin" && session.role !== "user") {
+    redirect("/");
     }
 
     const submission = parseWithZod(formData,{
@@ -586,8 +587,8 @@ export async function editProveedor(prevState: any, formData:FormData){
 
     const session = await getSesion();
 
-    if(session.role !== "admin"){
-        redirect("/")
+    if (session.role !== "admin" && session.role !== "user") {
+    redirect("/");
     }
 
     const submission = parseWithZod(formData, {schema:proveedoresSchema});
@@ -620,8 +621,8 @@ export async function DeleteProveedor(formData:FormData){
 
     const session = await getSesion();
 
-    if(session.role !== "admin"){
-        redirect("/")
+    if (session.role !== "admin" && session.role !== "user") {
+    redirect("/");
     }
 
     const id = formData.get("id") as string;
@@ -646,7 +647,10 @@ export async function createOrder(prevState: unknown, formData: FormData): Promi
 
     const session = await getSesion();
   
-    if (session.role !== "admin") redirect("/");
+    if (!session) {
+    redirect("/");
+    }
+
   
     const submission = parseWithZod(formData, { schema: orderSchema });
     if (submission.status !== "success")  
@@ -762,8 +766,8 @@ if (lowStock.length > 0) {
 export async function editOrder(prevState: any, formData: FormData) {
    const session = await getSesion();
 
-    if(session.role !== "admin"){
-        redirect("/")
+    if (!session) {
+    redirect("/");
     }
 
     const id = formData.get("id") as string;
@@ -877,8 +881,8 @@ if (lowStock.length > 0) {
 export async function RefundOrder(formData:FormData){
      const session = await getSesion();
 
-    if(session.role !== "admin" && session.role !== "user" ){
-        redirect("/")
+    if (!session) {
+    redirect("/");
     }
 
     const orderId = formData.get("id") as string;
