@@ -188,7 +188,7 @@ export default function EditProductForm({data}:EditProductFormProps) {
                         <div className="flex flex-col gap-3"> 
                             <Label>Cantidad del producto</Label>
                             <p className="text-xs text-gray-500">Recuerde que esta es la cantidad del producto en un lugar</p>
-                            <Input type="number" placeholder="15"
+                            <Input type="number" placeholder="15" 
                             key={fields.stock.key}
                             name={fields.stock.name}
                             defaultValue={data.stock}/>
@@ -206,7 +206,7 @@ export default function EditProductForm({data}:EditProductFormProps) {
                         <div className="flex flex-col gap-3"> 
                             <Label>Precio de compra del producto</Label>
                             <p className="text-xs text-gray-500">Precio al que se compro el producto</p>
-                            <Input type="number" placeholder="15"
+                            <Input type="number" placeholder="15" step="0.01"
                             key={fields.buyprice.key}
                             name={fields.buyprice.name}
                             defaultValue={data.buyprice}/>
@@ -215,7 +215,7 @@ export default function EditProductForm({data}:EditProductFormProps) {
                         <div className="flex flex-col gap-3"> 
                             <Label>Precio de venta del producto</Label>
                             <p className="text-xs text-gray-500">Precio al que se vendera el producto</p>
-                            <Input type="number" placeholder="15"
+                            <Input type="number" placeholder="15" step="0.01"
                             key={fields.sellprice.key}
                             name={fields.sellprice.name}
                             defaultValue={data.sellprice}/>

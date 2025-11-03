@@ -191,7 +191,7 @@ export default function CreateProductPage() {
                         <div className="flex flex-col gap-3"> 
                             <Label>Precio de compra del producto</Label>
                             <p className="text-xs text-gray-500">Precio al que se compro el producto</p>
-                            <Input type="number" placeholder="15"
+                            <Input type="number" placeholder="15" step="0.01"
                             key={fields.buyprice.key}
                             name={fields.buyprice.name}
                             defaultValue={fields.buyprice.initialValue}/>
@@ -200,7 +200,7 @@ export default function CreateProductPage() {
                         <div className="flex flex-col gap-3"> 
                             <Label>Precio de venta del producto</Label>
                             <p className="text-xs text-gray-500">Precio al que se vendera el producto</p>
-                            <Input type="number" placeholder="15"
+                            <Input type="number" placeholder="15" step="0.01"
                             key={fields.sellprice.key}
                             name={fields.sellprice.name}
                             defaultValue={fields.sellprice.initialValue}/>
