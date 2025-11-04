@@ -144,7 +144,7 @@ export default function CreateProductPage() {
                             <Label>Lugar donde se encuentra el producto</Label>
                             <Select key={fields.location.key} name={fields.location.name} defaultValue={fields.location.initialValue}> 
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Selecciona una categoria" />
+                                    <SelectValue placeholder="Selecciona una Sucursal" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {sucursales.map((sucursal) =>(

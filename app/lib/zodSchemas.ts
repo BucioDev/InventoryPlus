@@ -1,4 +1,4 @@
-import z from "zod";
+import z, { string } from "zod";
 
 
 export const userSchema = z.object({
@@ -8,6 +8,7 @@ export const userSchema = z.object({
     lastname: z.string().min(3).optional(),
     img: z.string().optional(),
     role: z.enum(["admin","vendor","user"],"Debe asignar un rol"),
+    location:z.string().optional(),
 })
 export const userSchemaWithoutPass = z.object({
     username: z.string().min(3,"Nombre de usuario  debe ser mayor a 3").max(20, "Nombre de usuario debe ser menor a 20"),
@@ -15,6 +16,7 @@ export const userSchemaWithoutPass = z.object({
     lastname: z.string().min(3).optional(),
     img: z.string().optional(),
     role: z.enum(["admin","vendor","user"],"Debe asignar un rol"),
+    location:z.string().optional(),
 })
 
 export const loginSchema = z.object({
@@ -67,5 +69,6 @@ export const orderItemSchema = z.object({
 export const orderSchema = z.object({
   nickname: z.string().min(1, "El nombre es requerido"),
   status: z.enum(["activo", "completada", "cancelado"],"Se debe seleccionar una opcion"),
+  paymentmethod: z.string().optional(),
   items: z.array(orderItemSchema).min(1, "Debes agregar al menos un producto"),
 });

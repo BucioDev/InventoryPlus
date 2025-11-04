@@ -13,14 +13,31 @@ import { parseWithZod } from "@conform-to/zod/v4";
 import { ChevronLeft, XIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
+
+type Sucursal = {
+    id: string;
+    name: string;
+  };
+
 
 
 export default function CreateUserPage() {
 
     const [images, setImages] = useState<string[]>([]);
+    const [sucursales, setSucursales] = useState<Sucursal[]>([]);
 
     const [lastResult, action] = useActionState(createUser, undefined);
+
+    useEffect(() => {
+            const fetchSucursales = async () => {
+                const res = await fetch("/api/sucursales");
+                const data: Sucursal[] = await res.json();
+                setSucursales(data)
+            };
+    
+            fetchSucursales();
+        }, [])
 
     const [form, fields] = useForm({
         lastResult,
@@ -97,6 +114,20 @@ export default function CreateUserPage() {
                                 </SelectContent>
                             </Select>
                             <p className="text-red-500">{fields.role.errors}</p>
+                        </div>
+                        <div className="flex flex-col gap-3">
+                            <Label>Surcursal del Usuario</Label>
+                            <Select key={fields.location.key} name={fields.location.name} defaultValue={fields.location.initialValue}> 
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecciona una Surcursal" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {sucursales.map((sucursal) =>(
+                                        <SelectItem key={sucursal.id} value={sucursal.name}>{sucursal.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <p className="text-red-500">{fields.location.errors}</p>
                         </div>
                         <div className="flex flex-col gap-3">
                         <Label>Images</Label>

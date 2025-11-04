@@ -159,7 +159,7 @@ export default function EditProductForm({data}:EditProductFormProps) {
                             <Label>Lugar donde se encuentra el producto</Label>
                             <Select key={fields.location.key} name={fields.location.name} defaultValue={data.location}> 
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Selecciona una categoria" />
+                                    <SelectValue placeholder="Selecciona una Sucursal" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {sucursales.map((sucursal) =>(

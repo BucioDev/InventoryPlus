@@ -16,6 +16,7 @@ async function GetOrders(){
             nickname: true,
             total: true,
             status: true,
+            paymentmethod:true,
             sellDate: true,
             items:{
                 select:{
@@ -66,6 +67,7 @@ export default async function OrdenesPage(){
                             <TableHead> Cantidad de productos </TableHead>
                             <TableHead> Total a pagar </TableHead>
                             <TableHead> Estado de orden </TableHead>
+                            <TableHead> Metodo de pago </TableHead>
                             <TableHead> Fecha de venta  </TableHead>
                             <TableHead className="text-right"> Acciones </TableHead>
                         </TableRow>
@@ -85,6 +87,7 @@ export default async function OrdenesPage(){
                             <TableCell>{order.totalQuantity}</TableCell>
                             <TableCell>{order.total}</TableCell>
                             <TableCell>{order.status}</TableCell>
+                            <TableCell>{order.paymentmethod}</TableCell>
                             <TableCell>{order.sellDate
                                 ? new Intl.DateTimeFormat('es-MX', {
                                     day: '2-digit',

@@ -54,6 +54,7 @@ export default async function UsersPage() {
                             <TableHead>Nombre de usuario</TableHead>
                             <TableHead>Nombre</TableHead>
                             <TableHead>Rol</TableHead>
+                            <TableHead>Sucursal Asignada</TableHead>
                             <TableHead>Fue Creado</TableHead>
                             <TableHead className="text-right">Acciones</TableHead>
                         </TableRow>
@@ -64,6 +65,7 @@ export default async function UsersPage() {
                                 <TableCell>{user.username}</TableCell>
                                 <TableCell>{user.firstName} {user.lastName}</TableCell>
                                 <TableCell>{user.role}</TableCell>
+                                <TableCell>{user.location}</TableCell>
                                 <TableCell>{new Intl.DateTimeFormat(['ban','id']).format(user.createdAt)}</TableCell>
                                 <TableCell className="text-right">
                                     <DropdownMenu>

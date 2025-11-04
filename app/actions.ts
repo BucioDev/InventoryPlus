@@ -7,8 +7,6 @@ import { parseWithZod } from "@conform-to/zod/v4";
 import { categorySchema, loginSchema, orderSchema, productSchema, proveedoresSchema, sucursalSchema, userSchema, userSchemaWithoutPass } from "./lib/zodSchemas";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
-import { ArrowUpWideNarrow } from "lucide-react";
-import { tr } from "zod/v4/locales";
 import { SubmissionResult } from "@conform-to/react";
 
 
@@ -85,6 +83,7 @@ export async function login(prevState: unknown, formData:FormData){
     session.userId = user.id;
     session.userName = user.username;
     session.role = user.role;
+    session.location = user.location || "",
     session.img = user.img || "";
     session.isLoggedIn = true;
 
@@ -120,6 +119,10 @@ export async function createUser(prevState: unknown, formData:FormData){
 
     const hashedPassword = await hashPassword(submission.value.password);
 
+    if(submission.value.location == "null"){
+        submission.value.location = ""
+    }
+
     await prisma.user.create({
         data:{
             username:submission.value.username,
@@ -128,6 +131,7 @@ export async function createUser(prevState: unknown, formData:FormData){
             lastName:submission.value.lastname || null,
             img:submission.value.img || null,
             role:submission.value.role,
+            location:submission.value.location || null,
         }
     })
 
@@ -150,6 +154,9 @@ export async function editUser(prevState: any, formData:FormData){
     }
 
     const userid = formData.get("id") as string;
+      if(submission.value.location == "null"){
+        submission.value.location = ""
+    }
 
     await prisma.user.update({
         where:{
@@ -161,6 +168,7 @@ export async function editUser(prevState: any, formData:FormData){
             lastName:submission.value.lastname || null,
             img:submission.value.img || null,
             role:submission.value.role,
+            location:submission.value.location || null,
         }
     })
 
@@ -706,8 +714,9 @@ if (stockErrors.length > 0) {
   }, 0);
 
   const orderData = {
-    nickname,
-    status,
+    nickname:submission.value.nickname,
+    status:submission.value.status,
+    paymentmethod: submission.value.paymentmethod || null,
     total,
     orderPrice,
     ...(status === "completada" && { sellDate: new Date() }), // Optional sellDate
@@ -825,6 +834,7 @@ if (stockErrors.length > 0) {
                     data: {
                         nickname,
                         status,
+                        paymentmethod: submission.value.paymentmethod || null,
                         total,
                         orderPrice,
                         ...(status === "completada" && { sellDate: new Date() }),

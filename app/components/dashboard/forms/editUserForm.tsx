@@ -8,13 +8,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { parseWithZod } from "@conform-to/zod/v4";
 import { ChevronLeft, XIcon } from "lucide-react";
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { editUser } from "@/app/actions";
 import { useForm } from "@conform-to/react";
 import { UploadDropzone } from "@/app/lib/uploadthing";
 import Image from "next/image";
 import { SubmitButton } from "../../SubmitButtons";
 
+type Sucursal = {
+    id: string;
+    name: string;
+};
 
 interface EditUserFormProps {
     data:{
@@ -23,6 +27,7 @@ interface EditUserFormProps {
         firstName:string,
         lastName:string | null,
         role:string,
+        location:string,
         img:string | null,
     }
 }
@@ -32,9 +37,22 @@ interface EditUserFormProps {
 export default function EditUserForm({data}:EditUserFormProps) {
 
     const [images, setImages] = useState<string[]>([]);
+    const [sucursales, setSucursales] = useState<Sucursal[]>([]);
+    
 
     const [lastResult, action] = useActionState(editUser, undefined);
 
+
+     useEffect(() => {
+            
+            const fetchSucursales = async () => {
+                const res = await fetch("/api/sucursales");
+                const data: Sucursal[] = await res.json();
+                setSucursales(data)
+            };
+    
+            fetchSucursales();
+        }, [])
     const [form, fields] = useForm({
         lastResult,
         onValidate({formData}){
@@ -101,6 +119,21 @@ export default function EditUserForm({data}:EditUserFormProps) {
                                 </SelectContent>
                             </Select>
                             <p className="text-red-500">{fields.role.errors}</p>
+                        </div>
+                        <div className="flex flex-col gap-3"> 
+                            <Label>Sucursal del usuario</Label>
+                            <Select key={fields.location.key} name={fields.location.name} defaultValue={data.location}> 
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecciona una Sucursal" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="null">Todas las sucurcales</SelectItem>
+                                    {sucursales.map((sucursal) =>(
+                                        <SelectItem key={sucursal.id} value={sucursal.name}>{sucursal.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <p className="text-red-500">{fields.location.errors}</p>
                         </div>
                         <div className="flex flex-col gap-3">
                         <Label>Images</Label>

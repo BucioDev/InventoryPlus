@@ -22,6 +22,7 @@ model User {
   password  String
   img       String?
   role      Role
+  location String?
 
   isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
@@ -99,6 +100,7 @@ model Order{
   nickname  String
   total     Float
   orderPrice Float
+  paymentmethod String?
   items      OrderItem[]
   status     Status
   sellDate  DateTime?

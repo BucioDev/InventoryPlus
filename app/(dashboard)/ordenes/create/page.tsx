@@ -40,6 +40,12 @@ type Category = {
     description: string;
     };
 
+
+interface SessionInfo {
+  location: string | null;
+  role: string | null;
+}
+
 export default function CreateOrderPage(){
 
     const [selectedProducts, setSelectedProducts] = useState<
@@ -53,7 +59,7 @@ export default function CreateOrderPage(){
         const [compatibility, setCompatibility] = useState<string[]>([]);
         const [products, setProducts] = useState<any[]>([]);
         const [categories, setCategories] = useState<Category[]>([]);
-
+        const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null);
 
         const [lastResult, action] = useActionState(createOrder, undefined);
 
@@ -70,6 +76,30 @@ export default function CreateOrderPage(){
         const debouncedBarcode = useDebounce(barcode, 500);   // waits .5s after typing
         const debounceName = useDebounce(name, 500);
         const debouncedLocation = useDebounce(location, 500); 
+            //role and location
+            useEffect(() => {
+            const fetchSession = async () => {
+            try {
+                const res = await fetch("/api/session", { cache: "no-store" });
+                const data = await res.json();
+
+                const sessionData: SessionInfo = {
+                location: data.location ?? null,
+                role: data.role ?? null,
+                };
+                setSessionInfo(sessionData);
+
+                // ✅ If the user is a vendor, set location automatically
+                if (data.role === "vendor" && data.location) {
+                setLocation(data.location);
+                }
+            } catch (err) {
+                console.error("Error fetching session:", err);
+            }
+            };
+
+            fetchSession();
+        }, []);
     
         // Fetch products whenever filters change
         useEffect(() => {
@@ -143,6 +173,18 @@ export default function CreateOrderPage(){
                             </Select>
                         </div>
                         <div className="flex flex-col gap-3">
+                            <Label> Metodo de pago </Label>
+                            <Select name={fields.paymentmethod.name} key={fields.paymentmethod.key} >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Escoger una opcion"/>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="efectivo"> Efectivo</SelectItem>
+                                    <SelectItem value="completada">Tarjeta</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="flex flex-col gap-3">
                             {selectedProducts.length > 0 && (
                                 <div className="mt-6">
                                     <Label>Productos agregados a la orden</Label>
@@ -168,6 +210,7 @@ export default function CreateOrderPage(){
                                             <Input
                                                 type="number"
                                                 min={1}
+                                                step="0.01"
                                                 value={item.quantity}
                                                 name={`items[${index}].quantity`}
                                                 onChange={e => {
@@ -255,10 +298,11 @@ export default function CreateOrderPage(){
                             value={name}
                             onChange={e => setName(e.target.value)}
                         />
-                        <Input
-                            placeholder="Buscar por localizacion"
+                         <Input
+                            placeholder="Buscar por localización"
                             value={location}
-                            onChange={e => setLocation(e.target.value)}
+                            onChange={(e) => setLocation(e.target.value)}
+                            disabled={sessionInfo?.role === "vendor"}
                         />
 
                         <Input
@@ -294,7 +338,10 @@ export default function CreateOrderPage(){
                             <TableHead>Notas</TableHead>
                             <TableHead>Variante</TableHead>
                             <TableHead>Stock</TableHead>
-                            <TableHead>Precio de compra</TableHead>
+                            {sessionInfo?.role !== "vendor" && (
+                                <TableHead>Precio de compra</TableHead>
+                            )}
+                            
                             <TableHead>Precio de venta</TableHead>
                             <TableHead className="text-right">Acciones</TableHead>
                         </TableRow>
@@ -312,7 +359,10 @@ export default function CreateOrderPage(){
                                 <TableCell>{product.notes}</TableCell>
                                 <TableCell>{product.variant}</TableCell>
                                 <TableCell>{product.stock}</TableCell>
-                                <TableCell>{product.buyprice}</TableCell>
+                                {sessionInfo?.role !== "vendor" && (
+                                    <TableCell>{product.buyprice}</TableCell>
+                                )}
+                                
                                 <TableCell>{product.sellprice}</TableCell>
                                 <TableCell className="text-right">
                                     <Button
