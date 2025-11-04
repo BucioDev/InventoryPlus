@@ -50,7 +50,7 @@ interface SessionInfo {
     id: string;
     nickname: string;
     status: string;
-    paymentmethod: string;
+    paymentmethod: string | null;
     items: OrderItemData[];
   };
 }
@@ -213,7 +213,7 @@ export default function EditOrderForm({data}: EditOrderProps){
                         </div>
                         <div className="flex flex-col gap-3">
                             <Label> Metodo de pago </Label>
-                            <Select name={fields.paymentmethod.name} key={fields.paymentmethod.key} defaultValue={data.paymentmethod}>
+                            <Select name={fields.paymentmethod.name} key={fields.paymentmethod.key} >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Escoger una opcion"/>
                                 </SelectTrigger>
