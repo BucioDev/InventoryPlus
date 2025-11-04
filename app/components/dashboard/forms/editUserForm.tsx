@@ -27,7 +27,7 @@ interface EditUserFormProps {
         firstName:string,
         lastName:string | null,
         role:string,
-        location:string,
+        location:string | null,
         img:string | null,
     }
 }
@@ -122,7 +122,7 @@ export default function EditUserForm({data}:EditUserFormProps) {
                         </div>
                         <div className="flex flex-col gap-3"> 
                             <Label>Sucursal del usuario</Label>
-                            <Select key={fields.location.key} name={fields.location.name} defaultValue={data.location}> 
+                            <Select key={fields.location.key} name={fields.location.name} defaultValue={data.location || ""}> 
                                 <SelectTrigger>
                                     <SelectValue placeholder="Selecciona una Sucursal" />
                                 </SelectTrigger>
