@@ -441,8 +441,8 @@ export async function AddStock(formData: FormData) {
 
     const session = await getSesion();
 
-    if (session.role !== "admin") {
-        redirect("/")
+    if (session.role !== "admin" && session.role !== "user") {
+    redirect("/");
     }
 
     const id = formData.get("id") as string;
@@ -465,6 +465,45 @@ export async function AddStock(formData: FormData) {
 
 } 
 
+export async function TranferStock(formData: FormData){
+    
+    const session = await getSesion();
+
+    if (session.role !== "admin" && session.role !== "user") {
+    redirect("/");
+    }
+    const id = formData.get("id") as string;
+    const amount = parseInt(formData.get("amount") as string);
+    const destinyId = formData.get("destiny") as string;
+
+    //remove stock from origin
+    const origin = await prisma.product.update({
+        where:{
+            id:id
+        },
+        data:{
+            stock:{
+                decrement:amount
+            }
+        }
+    })
+
+    //add stock to the destiny
+    const destiny = await prisma.product.update({
+        where:{
+            id:destinyId
+        },
+        data:{
+            stock:{
+                increment: amount
+            }
+        }
+    })
+
+    await createLog(session.userId as string, `Tranpaso stock del Producto ${origin.name} desde ${origin.location} a ${destiny.location}`);
+
+    redirect("/inventario?action=updated&entity=producto");
+}
 
 
 //------------------------------------Sucursal Actions -------------------------------------

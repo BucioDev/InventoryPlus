@@ -1,5 +1,6 @@
 "use client"
 import AddStockForm from "@/app/components/dashboard/forms/AddStockForm";
+import TransfertockForm from "@/app/components/dashboard/forms/TransferStockForm";
 import { ToastHandler } from "@/app/components/ToastHandler";
 import prisma from "@/app/lib/prisma";
 import { Button } from "@/components/ui/button";
@@ -188,6 +189,7 @@ export default function InventarioPage() {
                                             <DropdownMenuItem asChild><Link href={`/inventario/productos/${product.id}`}>Editar</Link></DropdownMenuItem>
                                             <DropdownMenuItem asChild><Link href={`/inventario/productos/${product.id}/delete`}>Eliminar</Link></DropdownMenuItem>
                                             <DropdownMenuItem asChild><AddStockForm productId={product.id} productName={product.name}/></DropdownMenuItem>
+                                            <DropdownMenuItem asChild><TransfertockForm productId={product.id} productName={product.name} location={product.location} barcode={product.barcode}/></DropdownMenuItem>
                                         </DropdownMenuContent>
                                         </DropdownMenu>
                                         </TableCell>

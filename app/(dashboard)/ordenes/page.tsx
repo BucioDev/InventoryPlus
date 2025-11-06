@@ -1,3 +1,4 @@
+import PrintReceiptButton from "@/app/components/PrintReceiptButton";
 import prisma from "@/app/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -117,6 +118,11 @@ export default async function OrdenesPage(){
                                                 <Link href={`/ordenes/${order.id}`}>Editar</Link>
                                             </DropdownMenuItem>
                                             )}
+                                            <DropdownMenuItem>
+                                                {/** 
+                                                <PrintReceiptButton order={order}/>
+                                                */}
+                                            </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </TableCell>
