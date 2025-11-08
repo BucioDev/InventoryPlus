@@ -24,7 +24,9 @@ async function GetOrder(id:string){
                     productId:true,
                     product:{
                         select:{
+                            id:true,
                             name:true,
+                            sellprice:true,
                             images:true,
                         }
                     }

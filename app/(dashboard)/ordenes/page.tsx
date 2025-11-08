@@ -21,7 +21,13 @@ async function GetOrders(){
             sellDate: true,
             items:{
                 select:{
-                    quantity:true
+                    quantity:true,
+                    priceAtSale:true,
+                    product:{
+                        select:{
+                            name:true
+                        }
+                    }
                 }
             }
         },
@@ -119,9 +125,7 @@ export default async function OrdenesPage(){
                                             </DropdownMenuItem>
                                             )}
                                             <DropdownMenuItem>
-                                                {/** 
                                                 <PrintReceiptButton order={order}/>
-                                                */}
                                             </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>

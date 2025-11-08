@@ -5,7 +5,7 @@ import React, { forwardRef } from "react";
 type OrderItem = {
   quantity?: number | null;
   priceAtSale?: number | null;
-  product?: { id?: string; name?: string | null; price?: number | null } | null;
+  product?: { id?: string; name?: string | null; sellprice?: number | null } | null;
 };
 
 type Order = {
@@ -14,47 +14,51 @@ type Order = {
   paymentmethod?: string | null;
   status?: string | null;
   sellDate?: string | Date;
-  total:number;
+  total: number;
   items: OrderItem[];
 };
 
-interface ReceiptProps { order: Order }
+interface ReceiptProps {
+  order: Order;
+}
 
 const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ order }, ref) => {
   const total = order.items.reduce((sum, item) => {
     const qty = item.quantity ?? 0;
-    const price = item.priceAtSale ?? item.product?.price ?? 0;
+    const price = item.priceAtSale ?? item.product?.sellprice ?? 0;
     return sum + price * qty;
   }, 0);
 
   return (
-    <div ref={ref} className="p-4 bg-white text-black max-w-sm mx-auto border rounded-md">
+    <div ref={ref} className="printable bg-white text-black">
+
       <h1 className="text-center font-bold text-lg">Moto Refacciones Pinos 32</h1>
       <p className="text-center text-sm mb-2">Grasias por su compra</p>
 
       <hr className="my-2" />
       <p>Order ID: {order.id}</p>
-      {order.nickname && <p>Customer: {order.nickname}</p>}
+      {order.nickname && <p>Cliente: {order.nickname}</p>}
       {order.paymentmethod && <p>Payment: {order.paymentmethod}</p>}
-      {order.status && <p>Status: {order.status}</p>}
-      {order.sellDate && <p>Date: {new Date(order.sellDate).toLocaleString()}</p>}
+      {order.sellDate && <p>Fecha: {new Date(order.sellDate).toLocaleString()}</p>}
       <hr className="my-2" />
 
-      <div>
+     <div className="mt-2 text-sm font-mono w-full" style={{ fontFamily: '"Courier New", monospace', whiteSpace: 'pre' }}>
         {order.items.map((item, i) => {
-          const productName = item.product?.name ?? "Unknown Product";
-          const price = item.priceAtSale ?? item.product?.price ?? 0;
-          const quantity = item.quantity ?? 0;
-          const subtotal = price * quantity;
+            const name = item.product?.name ?? "Unknown Product";
+            const price = item.priceAtSale ?? item.product?.sellprice ?? 0;
+            const qty = item.quantity ?? 0;
+            const subtotal = price * qty;
 
-          return (
-            <div key={i} className="flex justify-between text-sm">
-              <span>{productName} x{quantity}</span>
-              <span>${subtotal.toFixed(2)}</span>
-            </div>
-          );
+            // Create fixed-width spacing for columns
+            const formattedLine =
+            name.padEnd(24, "\u00A0") + // product name column
+            qty.toString().padStart(5, "\u00A0") +
+            ("$" + subtotal.toFixed(2)).padStart(12, "\u00A0");
+
+            return <div key={i}>{formattedLine}</div>;
         })}
-      </div>
+        </div>
+
 
       <hr className="my-2" />
       <p className="text-right font-bold text-lg">Total: ${total.toFixed(2)}</p>

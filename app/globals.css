@@ -123,3 +123,51 @@
     @apply bg-background text-foreground;
   }
 }
+/*Style for ticket */
+@media print {
+  /* Fit exactly to 80mm roll width */
+  .printable {
+    width: 80mm !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    background: white !important;
+    font-family: "Courier New", monospace !important;
+    font-size: 11pt !important;
+    line-height: 1.35 !important;
+    color: black !important;
+  }
+
+  /* Remove borders and shadows */
+  .printable * {
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* Only print the receipt area */
+  body * {
+    visibility: hidden;
+  }
+  .printable, .printable * {
+    visibility: visible;
+  }
+  .printable {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+
+  /* Force printer page size to 80mm roll, no margins */
+  @page {
+    size: 80mm auto;
+    margin: 0;
+  }
+
+  /* Ensure dark, crisp print */
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background: white !important;
+    color: black !important;
+  }
+}
