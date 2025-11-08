@@ -125,9 +125,9 @@
 }
 /*Style for ticket */
 @media print {
-  /* Fit exactly to 80mm roll width */
+  /* Core receipt area */
   .printable {
-    width: 58mm !important;
+    width: 72mm !important;              /* fits Epson TM-T20 print width */
     margin: 0 auto !important;
     padding: 0 !important;
     background: white !important;
@@ -135,35 +135,47 @@
     font-size: 11pt !important;
     line-height: 1.35 !important;
     color: black !important;
+    white-space: pre !important;          /* keeps alignment */
+    display: block !important;
   }
 
-  /* Remove borders and shadows */
+  /* Remove visual extras */
   .printable * {
     border: none !important;
     border-radius: 0 !important;
     box-shadow: none !important;
+    background: none !important;
   }
 
-  /* Only print the receipt area */
+  /* Only show the receipt when printing */
   body * {
-    visibility: hidden;
+    visibility: hidden !important;
   }
-  .printable, .printable * {
-    visibility: visible;
+  .printable,
+  .printable * {
+    visibility: visible !important;
   }
+
   .printable {
     position: absolute;
     left: 0;
     top: 0;
+    page-break-after: avoid !important;
+    page-break-before: avoid !important;
   }
 
-  /* Force printer page size to 80mm roll, no margins */
+  /* Let the printer auto-cut after the text — no large white area */
+  html, body {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
   @page {
-    size: 58mm auto;
+    size: 80mm auto;      /* width fixed, height dynamic */
     margin: 0;
   }
 
-  /* Ensure dark, crisp print */
+  /* Ensure dark, crisp text */
   body {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
