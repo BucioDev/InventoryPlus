@@ -127,7 +127,7 @@
 @media print {
   /* Fit exactly to 80mm roll width */
   .printable {
-    width: 80mm !important;
+    width: 58mm !important;
     margin: 0 auto !important;
     padding: 0 !important;
     background: white !important;
@@ -159,7 +159,7 @@
 
   /* Force printer page size to 80mm roll, no margins */
   @page {
-    size: 80mm auto;
+    size: 58mm auto;
     margin: 0;
   }
 
