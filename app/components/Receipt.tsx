@@ -52,8 +52,8 @@ const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ order }, ref) => {
             // Create fixed-width spacing for columns
             const formattedLine =
             name.padEnd(22, "\u00A0") +   // was 24, reduced a bit
-            qty.toString().padStart(4, "\u00A0") +
-            ("$" + subtotal.toFixed(2)).padStart(10, "\u00A0");
+            qty.toString().padStart(2, "\u00A0") +
+            ("$" + subtotal.toFixed(2)).padStart(8, "\u00A0");
 
 
             return <div key={i}>{formattedLine}</div>;
