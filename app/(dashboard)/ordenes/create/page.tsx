@@ -14,6 +14,7 @@ import { ChevronLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
+import { da } from "zod/v4/locales";
 
 
 function useDebounce<T>(value: T, delay: number): T {
@@ -44,7 +45,13 @@ type Category = {
 interface SessionInfo {
   location: string | null;
   role: string | null;
+  userId: string | null;
 }
+type Sucursal = {
+    id: string;
+    name: string;
+  };
+
 
 export default function CreateOrderPage(){
 
@@ -56,10 +63,12 @@ export default function CreateOrderPage(){
         const [barcode, setBarcode] = useState("");
         const [name, setName] = useState("");
         const [location, setLocation] = useState("");
+        const [userId, setUserId] = useState("");
         const [compatibility, setCompatibility] = useState<string[]>([]);
         const [products, setProducts] = useState<any[]>([]);
         const [categories, setCategories] = useState<Category[]>([]);
         const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null);
+        const [sucursales, setSucursales] = useState<Sucursal[]>([]);
 
         const [lastResult, action] = useActionState(createOrder, undefined);
 
@@ -78,28 +87,38 @@ export default function CreateOrderPage(){
         const debouncedLocation = useDebounce(location, 500); 
             //role and location
             useEffect(() => {
-            const fetchSession = async () => {
-            try {
-                const res = await fetch("/api/session", { cache: "no-store" });
-                const data = await res.json();
+                const fetchSession = async () => {
+                    try {
+                    const res = await fetch("/api/session", { cache: "no-store" });
+                    const data = await res.json();
 
-                const sessionData: SessionInfo = {
-                location: data.location ?? null,
-                role: data.role ?? null,
+                    const sessionData: SessionInfo = {
+                        location: data.location ?? null,
+                        role: data.role ?? null,
+                        userId: data.userId ?? null,
+                    };
+
+                    setSessionInfo(sessionData);
+                    setUserId(data.userId);
+
+                    // ✅ Automatically select user's location if available
+                    if (data.location) {
+                        setLocation(data.location);
+                    }
+                    } catch (err) {
+                    console.error("Error fetching session:", err);
+                    }
                 };
-                setSessionInfo(sessionData);
 
-                // ✅ If the user is a vendor, set location automatically
-                if (data.role === "vendor" && data.location) {
-                setLocation(data.location);
-                }
-            } catch (err) {
-                console.error("Error fetching session:", err);
-            }
-            };
+                const fetchSucursales = async () => {
+                    const res = await fetch("/api/sucursales");
+                    const data: Sucursal[] = await res.json();
+                    setSucursales(data);
+                };
 
-            fetchSession();
-        }, []);
+                fetchSession().then(fetchSucursales);
+                }, []);
+
     
         // Fetch products whenever filters change
         useEffect(() => {
@@ -152,6 +171,7 @@ export default function CreateOrderPage(){
                 </CardHeader>
                 <CardContent>
                     <div className="flex flex-col gap-6">
+                        <input type="hidden" value={userId} name={fields.userId.name} id={fields.userId.id}/>
                         <div className="flex flex-col gap-3">
                             <Label>Nombre o Apodo del cliente </Label>
                             <Input  type="text"
@@ -172,6 +192,27 @@ export default function CreateOrderPage(){
                                 </SelectContent>
                             </Select>
                         </div>
+                         <div className="flex flex-col gap-3">
+                            <Label>Sucursal</Label>
+                            <Select
+                                key={fields.location.key}
+                                name={fields.location.name}
+                                value={location ?? ""} // controlled value
+                                onValueChange={(value) => setLocation(value)} // update state
+                                disabled={sessionInfo?.role === "vendor"} // disable if vendor
+                            >
+                                <SelectTrigger>
+                                <SelectValue placeholder="Selecciona una Sucursal" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                {sucursales.map((sucursal) => (
+                                    <SelectItem key={sucursal.id} value={sucursal.name}>
+                                    {sucursal.name}
+                                    </SelectItem>
+                                ))}
+                                </SelectContent>
+                            </Select>
+                            </div>
                         <div className="flex flex-col gap-3">
                             <Label> Metodo de pago </Label>
                             <Select name={fields.paymentmethod.name} key={fields.paymentmethod.key} >

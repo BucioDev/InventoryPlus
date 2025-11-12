@@ -756,6 +756,8 @@ if (stockErrors.length > 0) {
     nickname:submission.value.nickname,
     status:submission.value.status,
     paymentmethod: submission.value.paymentmethod || null,
+    location:submission.value.location || null,
+    userID:submission.value.userId,
     total,
     orderPrice,
     ...(status === "completada" && { sellDate: new Date() }), // Optional sellDate
@@ -874,6 +876,8 @@ if (stockErrors.length > 0) {
                         nickname,
                         status,
                         paymentmethod: submission.value.paymentmethod || null,
+                        location:submission.value.location || null,
+                        userID:submission.value.userId,
                         total,
                         orderPrice,
                         ...(status === "completada" && { sellDate: new Date() }),

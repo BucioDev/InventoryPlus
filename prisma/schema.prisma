@@ -101,6 +101,8 @@ model Order{
   total     Float
   orderPrice Float
   paymentmethod String?
+  location String?
+  userID String?
   items      OrderItem[]
   status     Status
   sellDate  DateTime?

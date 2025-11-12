@@ -34,6 +34,7 @@ export async function GET(req: Request) {
       },
       where: {
         AND: [
+          { isDeleted: false },
           barcode ? { barcode: { contains: barcode, mode: "insensitive" } } : {},
           name ? { name: { contains: name, mode: "insensitive" } } : {},
           location ? { location: { contains: location, mode: "insensitive" } } : {},

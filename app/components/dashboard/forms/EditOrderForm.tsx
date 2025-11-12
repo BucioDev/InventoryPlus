@@ -43,6 +43,7 @@ type Category = {
 interface SessionInfo {
   location: string | null;
   role: string | null;
+  userId: string;
 }
 
     interface EditOrderProps {
@@ -51,6 +52,7 @@ interface SessionInfo {
     nickname: string;
     status: string;
     paymentmethod: string | null;
+    location: string | null;
     items: OrderItemData[];
   };
 }
@@ -64,6 +66,12 @@ interface SessionInfo {
         images:string[];
     };
     }
+
+    type Sucursal = {
+    id: string;
+    name: string;
+  };
+
     
 export default function EditOrderForm({data}: EditOrderProps){
 
@@ -72,14 +80,16 @@ export default function EditOrderForm({data}: EditOrderProps){
 >([]);
 
 
+
     const [barcode, setBarcode] = useState("");
         const [location, setLocation] = useState("");
+        const [userId, setUserId] = useState("");
         const [name, setName] = useState("");
         const [compatibility, setCompatibility] = useState<string[]>([]);
         const [products, setProducts] = useState<any[]>([]);
         const [categories, setCategories] = useState<Category[]>([]);
-
         const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null);
+        const [sucursales, setSucursales] = useState<Sucursal[]>([]);
 
 
         const [lastResult, action] = useActionState(editOrder, undefined);
@@ -99,28 +109,37 @@ export default function EditOrderForm({data}: EditOrderProps){
         const debouncedLocation = useDebounce(location, 500); 
             //role and location
          useEffect(() => {
-                    const fetchSession = async () => {
-                    try {
-                        const res = await fetch("/api/session", { cache: "no-store" });
-                        const data = await res.json();
+                         const fetchSession = async () => {
+                             try {
+                             const res = await fetch("/api/session", { cache: "no-store" });
+                             const data = await res.json();
+         
+                             const sessionData: SessionInfo = {
+                                 location: data.location ?? null,
+                                 role: data.role ?? null,
+                                 userId: data.userId ?? null,
+                             };
+         
+                             setSessionInfo(sessionData);
+                             setUserId(data.userId);
         
-                        const sessionData: SessionInfo = {
-                        location: data.location ?? null,
-                        role: data.role ?? null,
-                        };
-                        setSessionInfo(sessionData);
-        
-                        // ✅ If the user is a vendor, set location automatically
-                        if (data.role === "vendor" && data.location) {
-                        setLocation(data.location);
-                        }
-                    } catch (err) {
-                        console.error("Error fetching session:", err);
-                    }
-                    };
-        
-                    fetchSession();
-                }, []);
+                             // ✅ Automatically select user's location if available
+                             if (data.location) {
+                                 setLocation(data.location);
+                             }
+                             } catch (err) {
+                             console.error("Error fetching session:", err);
+                             }
+                         };
+         
+                         const fetchSucursales = async () => {
+                             const res = await fetch("/api/sucursales");
+                             const data: Sucursal[] = await res.json();
+                             setSucursales(data);
+                         };
+         
+                         fetchSession().then(fetchSucursales);
+                         }, []);
     
         // Fetch products whenever filters change
         useEffect(() => {
@@ -190,6 +209,7 @@ export default function EditOrderForm({data}: EditOrderProps){
                 </CardHeader>
                 <CardContent>
                     <div className="flex flex-col gap-6">
+                         <input type="hidden" value={userId} name={fields.userId.name} id={fields.userId.id}/>
                         <div className="flex flex-col gap-3">
                             <Label>Nombre o Apodo del cliente </Label>
                             <Input  type="text"
@@ -212,8 +232,30 @@ export default function EditOrderForm({data}: EditOrderProps){
                             </Select>
                         </div>
                         <div className="flex flex-col gap-3">
+                            <Label>Sucursal</Label>
+                         <Select
+                            key={fields.location.key}
+                            name={fields.location.name}
+                            defaultValue={data.location?.trim() ?? ""}
+                            disabled={sessionInfo?.role === "vendor"}
+                            >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Selecciona una Sucursal" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {sucursales.map((sucursal) => (
+                                    
+                                <SelectItem key={sucursal.id} value={sucursal.name.trim()}>
+                                    {sucursal.name}
+                                </SelectItem>
+                                ))}
+                            </SelectContent>
+                            </Select>
+
+                        </div>
+                        <div className="flex flex-col gap-3">
                             <Label> Metodo de pago </Label>
-                            <Select name={fields.paymentmethod.name} key={fields.paymentmethod.key} >
+                            <Select name={fields.paymentmethod.name} key={fields.paymentmethod.key} defaultValue={data.paymentmethod ?? ""} >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Escoger una opcion"/>
                                 </SelectTrigger>

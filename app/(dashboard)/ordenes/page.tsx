@@ -18,6 +18,8 @@ async function GetOrders(){
             total: true,
             status: true,
             paymentmethod:true,
+            location:true,
+            userID:true,
             sellDate: true,
             items:{
                 select:{
@@ -49,7 +51,7 @@ async function GetOrders(){
 }
 
 export default async function OrdenesPage(){
-    const orders = await GetOrders()
+    const orders = await GetOrders();
     return(
         <>
         <div className="flex items-center justify-end mt-5">
