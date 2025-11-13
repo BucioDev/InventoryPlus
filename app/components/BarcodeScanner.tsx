@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { BrowserMultiFormatReader } from "@zxing/browser";
-import {  Result } from "@zxing/library";
+import { Result } from "@zxing/library";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DialogTrigger } from "@radix-ui/react-dialog";
