@@ -800,12 +800,17 @@ const lowStock = updatedProducts.filter(
 
 if (lowStock.length > 0) {
   const productNames = lowStock.map(p => p.name).join(", ");
-  //TODO: change this redirect for creting a notificacion that can be seen at any moment, for ease of access
   await createNotification(`Stock bajo en  los productos: ${productNames}`);
 }
 
 
+
   await createLog(session.userId as string, `Creo una Orden para ${formData.get("name")}`);
+
+  if (order.status === "completada") {
+  redirect(`/print-receipt/${order.id}?action=created&entity=orden`);
+}
+
 
     redirect("/ordenes?action=created&entity=orden");
     return
@@ -922,10 +927,13 @@ const lowStock = updatedProducts.filter(
 
 if (lowStock.length > 0) {
   const productNames = lowStock.map(p => p.name).join(", ");
-  //TODO: change this redirect for creting a notificacion that can be seen at any moment, for ease of access 
    await createNotification(`Stock bajo en los productos: ${productNames}`);
 }
     await createLog(session.userId as string, `Actualizo la Orden para ${formData.get("name")}`);
+
+     if (order.status === "completada") {
+  redirect(`/print-receipt/${order.id}?action=updated&entity=orden`);
+    }
 
     redirect("/ordenes?action=updated&entity=orden");
 }
@@ -983,6 +991,38 @@ export async function RefundOrder(formData:FormData){
 }
 
 
+export async function getOrderData(orderId: string) {
+  return await prisma.order.findUnique({
+    where: { id: orderId },
+    select: {
+      id: true,
+      nickname: true,
+      total: true,
+      status: true,
+      paymentmethod: true,
+      location: true,
+      userID: true,
+      sellDate: true,
+      user: {
+        select: {
+          firstName: true,
+        },
+      },
+      items: {
+        select: {
+          quantity: true,
+          priceAtSale: true,
+          product: {
+            select: {
+              name: true,
+              sellprice: true,
+            },
+          },
+        },
+      },
+    },
+  });
+}
 
 //---------------------------------------- Notifications Actiions ------------------------------------------
 
@@ -1007,3 +1047,4 @@ export async function MarkAsRead(formData:FormData){
         }
     })
 }
+

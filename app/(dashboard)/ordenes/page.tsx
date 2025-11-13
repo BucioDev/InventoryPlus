@@ -21,6 +21,11 @@ async function GetOrders(){
             location:true,
             userID:true,
             sellDate: true,
+            user:{
+                select:{
+                    firstName:true,
+                }
+            },
             items:{
                 select:{
                     quantity:true,

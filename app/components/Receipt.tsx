@@ -8,6 +8,10 @@ type OrderItem = {
   product?: { id?: string; name?: string | null; sellprice?: number | null } | null;
 };
 
+type User = {
+  firstName: string;
+}
+
 type Order = {
   id: string;
   nickname?: string | null;
@@ -16,6 +20,7 @@ type Order = {
   sellDate?: string | Date;
   total: number;
   items: OrderItem[];
+  user: User;
 };
 
 interface ReceiptProps {
@@ -37,6 +42,7 @@ const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ order }, ref) => {
 
       <hr className="my-2" />
       <p>Order ID: {order.id}</p>
+      {order.user.firstName && <p>Cajero: {order.user.firstName}</p>}
       {order.nickname && <p>Cliente: {order.nickname}</p>}
       {order.paymentmethod && <p>Payment: {order.paymentmethod}</p>}
       {order.sellDate && <p>Fecha: {new Date(order.sellDate).toLocaleString()}</p>}
