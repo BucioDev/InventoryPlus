@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MoreHorizontal, PlusCircle } from "lucide-react";
+import { ChevronRight, MoreHorizontal, PlusCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -99,7 +99,7 @@ export default function InventarioPage() {
     }
 
     return ( 
-<div className="grid grid-cols-3 gap-4 mt-5">
+<div className="grid  gap-4 mt-5">
     <div className="col-span-3 col-start-1">
         <Card>
         <CardHeader>
@@ -107,7 +107,7 @@ export default function InventarioPage() {
             </CardHeader>
             <CardContent className="flex justify-between">
                 <Button asChild><Link href="/inventario/productos/create"><PlusCircle/> Agregar producto </Link></Button>
-                <Button asChild><Link href="/inventario/categorias/create"><PlusCircle/> Agregar categoria </Link></Button>
+                <Button asChild><Link href="/inventario/categorias"> Ver categorias <ChevronRight/></Link></Button>
             </CardContent>
         </Card>
     </div>
@@ -270,50 +270,6 @@ export default function InventarioPage() {
         </div>
         </CardFooter>
 
-        </Card>
-    </div>
-    <div className="row-span-3 col-start-3 row-start-2">
-        <Card>
-            <CardHeader>
-                <CardTitle>Categorias</CardTitle>
-                <CardDescription>Categorias de productos</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Nombre</TableHead>
-                            <TableHead>Descripcion</TableHead>
-                            <TableHead className="text-right">Acciones</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {categories.map((cat)=>(
-                            <TableRow key={cat.id}>
-                                <TableCell>{cat.name}</TableCell>
-                                <TableCell>{cat.description}</TableCell>
-                                <TableCell className="text-right">
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button size="icon">
-                                                <MoreHorizontal className="h-5 w-5" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuLabel>
-                                                Acciones
-                                            </DropdownMenuLabel>
-                                            <DropdownMenuSeparator/>
-                                            <DropdownMenuItem asChild><Link href={`/inventario/categorias/${cat.id}`}>Editar</Link></DropdownMenuItem>
-                                            <DropdownMenuItem asChild><Link href={`/inventario/categorias/${cat.id}/delete`}>Eliminar</Link></DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </CardContent>
         </Card>
     </div>
 </div>
