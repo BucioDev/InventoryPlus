@@ -1,6 +1,9 @@
 import prisma from "@/app/lib/prisma";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { ChevronLeft } from "lucide-react";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +46,11 @@ export default async function LogsPage() {
 
     return(
         <>
+        <Button asChild className="mt-5">
+            <Link href="/ajustes">
+            <ChevronLeft/>
+            </Link>
+        </Button>
         <Card className="mt-5">
             <CardHeader>
                 <CardTitle>

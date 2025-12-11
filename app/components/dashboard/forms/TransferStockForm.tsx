@@ -15,10 +15,16 @@ type Products = {
     location:string;
 }
 
+type Sucursal = {
+    id: string;
+    name: string;
+  };
+
 export default function TransfertockForm({productId, productName, location, barcode}:{productId:string, productName:string, location:string, barcode:string}){
 
     const [products, setProducts] = useState<Products[]>([]);
 
+    const [sucursales, setSucursales] = useState<Sucursal[]>([]);
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -32,7 +38,13 @@ export default function TransfertockForm({productId, productName, location, barc
         setProducts(filteredProducts);
         };
 
-        fetchProducts();
+        const fetchSucursales = async () => {
+            const res = await fetch("/api/sucursales");
+            const data: Sucursal[] = await res.json();
+            setSucursales(data)
+        };
+
+        fetchProducts().then(fetchSucursales);
     }, [productId, barcode]);
 
     return(
@@ -70,9 +82,14 @@ export default function TransfertockForm({productId, productName, location, barc
                         </SelectContent>
                         </Select>
                     ) : (
-                        <p className="text-sm text-red-500 italic">
+                        <div className="flex flex-col gap-3">
+                            <p className="text-sm text-red-500 italic">
                         El producto equivalente no  ha sido encontrado en otra sucursal. Favor de registrarlo primero
                         </p>
+                        
+                        </div>
+                        
+                        
                     )}
                     </div>
                         <input type="hidden" name="id" id="id" value={productId}/>

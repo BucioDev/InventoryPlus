@@ -4,7 +4,7 @@ import TransfertockForm from "@/app/components/dashboard/forms/TransferStockForm
 import { ToastHandler } from "@/app/components/ToastHandler";
 import prisma from "@/app/lib/prisma";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -48,6 +48,17 @@ export default function InventarioPage() {
     const [products, setProducts] = useState<any[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
 
+    const [currentPage, setCurrentPage] = useState(1);
+        const itemsPerPage = 25;
+
+        const totalPages = Math.ceil(products.length / itemsPerPage);
+
+        const paginatedProducts = products.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+        );
+
+
     // Apply debounce to barcode and location
     const debouncedBarcode = useDebounce(barcode, 500);   // waits .5s after typing
     const debounceName = useDebounce(name, 500)
@@ -86,6 +97,7 @@ export default function InventarioPage() {
             (e.target as HTMLInputElement).value = "";
         }
     }
+
     return ( 
 <div className="grid grid-cols-3 gap-4 mt-5">
     <div className="col-span-3 col-start-1">
@@ -140,64 +152,124 @@ export default function InventarioPage() {
                     
                 </CardDescription>
             </CardHeader>
-            <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Image</TableHead>
-                            <TableHead>Nombre</TableHead>
-                            <TableHead>Codigo de barras</TableHead>
-                            <TableHead>Categoria</TableHead>
-                            <TableHead>Compatibilidad</TableHead>
-                            <TableHead>Marca</TableHead>
-                            <TableHead>Ubicacion</TableHead>
-                            <TableHead>Notas</TableHead>
-                            <TableHead>Variante</TableHead>
-                            <TableHead>Stock</TableHead>
-                            <TableHead>Precio de compra</TableHead>
-                            <TableHead>Precio de venta</TableHead>
-                            <TableHead>Acciones</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {products.map((product) => (
-                            <TableRow key={product.id}>
-                                <TableCell><Image alt="Imagen del producto" src={product.images[0]} width={64} height={64} className="rounded-md object-cover h-16 w-16"/></TableCell>
-                                <TableCell>{product.name}</TableCell>
-                                <TableCell>{product.barcode}</TableCell>
-                                <TableCell>{product.category.name}</TableCell>
-                                <TableCell>{product.compatibility.join(', ')}</TableCell>
-                                <TableCell>{product.brand}</TableCell>
-                                <TableCell>{product.location}</TableCell>
-                                <TableCell>{product.notes}</TableCell>
-                                <TableCell>{product.variant}</TableCell>
-                                <TableCell>{product.stock}</TableCell>
-                                <TableCell>{product.buyprice}</TableCell>
-                                <TableCell>{product.sellprice}</TableCell>
-                                <TableCell className="text-right">
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button size="icon">
-                                                <MoreHorizontal className="h-5 w-5" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuLabel>
-                                                Acciones
-                                            </DropdownMenuLabel>
-                                            <DropdownMenuSeparator/>
-                                            <DropdownMenuItem asChild><Link href={`/inventario/productos/${product.id}`}>Editar</Link></DropdownMenuItem>
-                                            <DropdownMenuItem asChild><Link href={`/inventario/productos/${product.id}/delete`}>Eliminar</Link></DropdownMenuItem>
-                                            <DropdownMenuItem asChild><AddStockForm productId={product.id} productName={product.name}/></DropdownMenuItem>
-                                            <DropdownMenuItem asChild><TransfertockForm productId={product.id} productName={product.name} location={product.location} barcode={product.barcode}/></DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                        </DropdownMenu>
-                                        </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </CardContent>
+             <CardContent>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Image</TableHead>
+            <TableHead>Nombre</TableHead>
+            <TableHead>Codigo de barras</TableHead>
+            <TableHead>Categoria</TableHead>
+            <TableHead>Compatibilidad</TableHead>
+            <TableHead>Marca</TableHead>
+            <TableHead>Ubicacion</TableHead>
+            <TableHead>Notas</TableHead>
+            <TableHead>Variante</TableHead>
+            <TableHead>Stock</TableHead>
+            <TableHead>Precio de compra</TableHead>
+            <TableHead>Precio de venta</TableHead>
+            <TableHead>Acciones</TableHead>
+          </TableRow>
+        </TableHeader>
+
+        <TableBody>
+          {paginatedProducts.map((product) => (
+            <TableRow key={product.id}>
+              <TableCell>
+                <Image
+                  alt="Imagen del producto"
+                  src={product.images[0]}
+                  width={64}
+                  height={64}
+                  className="rounded-md object-cover h-16 w-16"
+                />
+              </TableCell>
+              <TableCell>{product.name}</TableCell>
+              <TableCell>{product.barcode}</TableCell>
+              <TableCell>{product.category.name}</TableCell>
+              <TableCell>{product.compatibility.join(", ")}</TableCell>
+              <TableCell>{product.brand}</TableCell>
+              <TableCell>{product.location}</TableCell>
+              <TableCell>{product.notes}</TableCell>
+              <TableCell>{product.variant}</TableCell>
+              <TableCell>{product.stock}</TableCell>
+              <TableCell>{product.buyprice}</TableCell>
+              <TableCell>{product.sellprice}</TableCell>
+
+              <TableCell className="text-right">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="icon">
+                      <MoreHorizontal className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href={`/inventario/productos/${product.id}`}>
+                        Editar
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href={`/inventario/productos/${product.id}/delete`}>
+                        Eliminar
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <AddStockForm productId={product.id} productName={product.name}/>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <TransfertockForm
+                        productId={product.id}
+                        productName={product.name}
+                        location={product.location}
+                        barcode={product.barcode}
+                      />
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </CardContent>
+        <CardFooter>
+
+        {/* Pagination */}
+        <div className="flex items-center justify-between mt-4">
+        <Button
+            variant="outline"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(currentPage - 1)}
+        >
+            Anterior
+        </Button>
+
+        <div className="flex gap-2">
+            {Array.from({ length: totalPages }, (_, i) => (
+            <Button
+                key={i}
+                variant={currentPage === i + 1 ? "default" : "outline"}
+                onClick={() => setCurrentPage(i + 1)}
+            >
+                {i + 1}
+            </Button>
+            ))}
+        </div>
+
+        <Button
+            variant="outline"
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage(currentPage + 1)}
+        >
+            Siguiente
+        </Button>
+        </div>
+        </CardFooter>
+
         </Card>
     </div>
     <div className="row-span-3 col-start-3 row-start-2">
