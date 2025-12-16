@@ -505,6 +505,46 @@ export async function TranferStock(formData: FormData){
     redirect("/inventario?action=updated&entity=producto");
 }
 
+export async function copyProduct(formData: FormData){
+
+    const session = await getSesion();
+
+    if (session.role !== "admin" && session.role !== "user") {
+    redirect("/");
+    }
+
+    const id = formData.get("productId") as string;
+    const sucursal = formData.get("sucursalId") as string;
+
+    const product = await prisma.product.findUnique({
+        where:{
+            id:id
+        }
+    })
+
+    const newProduct = await prisma.product.create({
+        data:{
+            name:product?.name as string,
+            barcode:product?.barcode as string,
+            categoryId:product?.categoryId as string,
+            compatibility:product?.compatibility,
+            images:product?.images,
+            brand:product?.brand as string,
+            location:sucursal,
+            notes:product?.notes,
+            variant:product?.variant || "",
+            stock:0,
+            alertammount:product?.alertammount as number,
+            sellprice:product?.sellprice as number,
+            buyprice:product?.buyprice as number,
+        }
+    })
+
+
+    await createLog(session.userId as string, `Creo una nuevo Producto ${product?.name}`);
+    return redirect("/inventario?action=created&entity=producto");
+}
+
 
 //------------------------------------Sucursal Actions -------------------------------------
 
