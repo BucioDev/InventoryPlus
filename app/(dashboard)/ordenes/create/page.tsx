@@ -135,6 +135,8 @@ export default function CreateOrderPage(){
             };
             fetchProducts();
         }, [debouncedBarcode, debounceName, debouncedLocation, compatibility]);
+
+
     
         // Add compatibility tag on Enter
         function handleCompatibilityAdd(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -192,27 +194,34 @@ export default function CreateOrderPage(){
                                 </SelectContent>
                             </Select>
                         </div>
-                         <div className="flex flex-col gap-3">
-                            <Label>Sucursal</Label>
-                            <Select
-                                key={fields.location.key}
-                                name={fields.location.name}
-                                value={location ?? ""} // controlled value
-                                onValueChange={(value) => setLocation(value)} // update state
-                                disabled={sessionInfo?.role === "vendor"} // disable if vendor
-                            >
-                                <SelectTrigger>
-                                <SelectValue placeholder="Selecciona una Sucursal" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                {sucursales.map((sucursal) => (
-                                    <SelectItem key={sucursal.id} value={sucursal.name}>
-                                    {sucursal.name}
-                                    </SelectItem>
-                                ))}
-                                </SelectContent>
-                            </Select>
-                            </div>
+                         <div 
+                                className="flex flex-col gap-3"
+                                >
+                                <Label>Sucursal</Label>
+                                <Select
+                                    value={location ?? ""}
+                                    onValueChange={(value) => {
+                                        // Guard against Radix empty emission
+                                        if (value) setLocation(value);
+                                    }}
+                                    disabled={sessionInfo?.role === "vendor"}
+                                    >
+                                    <SelectTrigger>
+                                        <SelectValue>
+                                        {location || "Selecciona una Sucursal"}
+                                        </SelectValue>
+                                    </SelectTrigger>
+
+                                    <SelectContent>
+                                        {sucursales.map((sucursal) => (
+                                        <SelectItem key={sucursal.id} value={sucursal.name}>
+                                            {sucursal.name}
+                                        </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                    </Select>
+                                </div>
+
                         <div className="flex flex-col gap-3">
                             <Label> Metodo de pago </Label>
                             <Select name={fields.paymentmethod.name} key={fields.paymentmethod.key} >
@@ -341,7 +350,7 @@ export default function CreateOrderPage(){
                         />
                          <Input
                             placeholder="Buscar por localización"
-                            value={location}
+                            value={location ?? ""}
                             onChange={(e) => setLocation(e.target.value)}
                             disabled={sessionInfo?.role === "vendor"}
                         />

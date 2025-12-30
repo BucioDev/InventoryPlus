@@ -140,7 +140,7 @@ export default function TransfertockForm({productId, productName, location, barc
                         <Button type="button" variant="secondary">Cerrar</Button>
                         </DialogClose>
 
-                            <SubmitButton text="Crear Copia del Producto" />
+                        <SubmitButton text="Crear Copia del Producto" />
                     </DialogFooter>
                     </form>
                 )}
