@@ -5,7 +5,7 @@ import { useReactToPrint } from "react-to-print";
 import { useRouter } from "next/navigation";
 import Receipt from "./Receipt";
 
-export default function AutoPrintReceipt({ order }: { order: any }) {
+export default function AutoPrintReceipt({ order, username }: { order: any, username: string }) {
   const router = useRouter();
   const receiptRef = useRef<HTMLDivElement>(null);
 
@@ -31,7 +31,7 @@ export default function AutoPrintReceipt({ order }: { order: any }) {
 
   return (
     <div className="p-4">
-      <Receipt ref={receiptRef} order={order} />
+      <Receipt ref={receiptRef} order={order} username={username}/>
     </div>
   );
 }

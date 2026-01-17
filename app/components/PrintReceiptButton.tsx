@@ -5,9 +5,10 @@ import Receipt from "./Receipt";
 
 interface PrintReceiptButtonProps {
   order: any;
+  username:string;
 }
 
-export default function PrintReceiptButton({ order }: PrintReceiptButtonProps) {
+export default function PrintReceiptButton({ order, username }: PrintReceiptButtonProps) {
   const printRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = () => {
@@ -46,7 +47,7 @@ export default function PrintReceiptButton({ order }: PrintReceiptButtonProps) {
       {/* Hidden receipt for print cloning */}
       <div className="hidden">
         <div ref={printRef}>
-          <Receipt order={order} />
+          <Receipt order={order} username={username}/>
         </div>
       </div>
 

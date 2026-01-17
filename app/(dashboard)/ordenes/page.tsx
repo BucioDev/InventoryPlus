@@ -1,3 +1,4 @@
+import { isLoggedIn } from "@/app/actions";
 import PrintReceiptButton from "@/app/components/PrintReceiptButton";
 import prisma from "@/app/lib/prisma";
 import { Button } from "@/components/ui/button";
@@ -57,6 +58,7 @@ async function GetOrders(){
 
 export default async function OrdenesPage(){
     const orders = await GetOrders();
+     const session = await isLoggedIn();
     return(
         <>
         <div className="flex items-center justify-end mt-5">
@@ -132,7 +134,7 @@ export default async function OrdenesPage(){
                                             </DropdownMenuItem>
                                             )}
                                             <DropdownMenuItem>
-                                                <PrintReceiptButton order={order}/>
+                                                <PrintReceiptButton order={order} username={session.firstName as string}/>
                                             </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>

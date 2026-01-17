@@ -8,6 +8,7 @@ import { categorySchema, loginSchema, orderSchema, productSchema, proveedoresSch
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { SubmissionResult } from "@conform-to/react";
+import { use } from "react";
 
 
 const saltRounds = 12;
@@ -82,6 +83,7 @@ export async function login(prevState: unknown, formData:FormData){
 
     session.userId = user.id;
     session.userName = user.username;
+    session.firstName = user.firstName;
     session.role = user.role;
     session.location = user.location || "",
     session.img = user.img || "";

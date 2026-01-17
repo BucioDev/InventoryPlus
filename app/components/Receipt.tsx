@@ -25,14 +25,17 @@ type Order = {
 
 interface ReceiptProps {
   order: Order;
+  username:string;
 }
 
-const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ order }, ref) => {
+const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ order, username }, ref) => {
   const total = order.items.reduce((sum, item) => {
     const qty = item.quantity ?? 0;
     const price = item.priceAtSale ?? item.product?.sellprice ?? 0;
     return sum + price * qty;
   }, 0);
+
+  
 
   return (
     <div ref={ref} className="printable bg-white text-black">
@@ -42,7 +45,7 @@ const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ order }, ref) => {
 
       <hr className="my-2" />
       <p>Order ID: {order.id}</p>
-      {order.user.firstName && <p>Cajero: {order.user.firstName}</p>}
+      {order.user.firstName && <p>Cajero: {username || "Cajero"}</p>}
       {order.nickname && <p>Cliente: {order.nickname}</p>}
       {order.paymentmethod && <p>Payment: {order.paymentmethod}</p>}
       {order.sellDate && <p>Fecha: {new Date(order.sellDate).toLocaleString()}</p>}
