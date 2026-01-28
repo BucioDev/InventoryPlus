@@ -27,7 +27,7 @@ export default function SalesChart() {
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch("/api/ordersbymonth");
+        const res = await fetch("/api/salechartdata");
         if (!res.ok) throw new Error(`Status ${res.status}`);
         const json: DataPoint[] = await res.json();
         if (mounted) setData(json);

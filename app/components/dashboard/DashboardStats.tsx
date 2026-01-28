@@ -13,7 +13,7 @@ endOfMonth.setMonth(endOfMonth.getMonth() + 1);
 endOfMonth.setDate(0);
 endOfMonth.setHours(23, 59, 59, 999);
 
-    const [sales,productCount] = await Promise.all([
+    const [sales,bills,productCount] = await Promise.all([
         prisma.order.findMany({
             where:{
                 status:"completada",
@@ -25,6 +25,19 @@ endOfMonth.setHours(23, 59, 59, 999);
             select:{
                 total:true,
                 orderPrice:true
+            }
+        }),
+
+        prisma.gastos.findMany({
+            where:{
+                isDeleted:false,
+                createdAt:{
+                    gte: startOfMonth,
+                    lte: endOfMonth,
+                },
+            },
+            select:{
+                amount:true
             }
         }),
 
@@ -40,6 +53,7 @@ endOfMonth.setHours(23, 59, 59, 999);
 
     return{
         sales,
+        bills,
         productCount
     }
 }
@@ -47,8 +61,9 @@ endOfMonth.setHours(23, 59, 59, 999);
 
 
 export async function DashboardStats() {
-    const {sales, productCount} = await getStats();
-    const totalRevenue = sales.reduce((total, sale) => {return total + (sale.total - sale.orderPrice)}, 0);
+    const {sales, bills, productCount} = await getStats();
+    const totalBills = bills.reduce((total, bill)=>{return total + bill.amount},0);
+    const totalRevenue = sales.reduce((total, sale) => {return total + (sale.total - sale.orderPrice)}, 0) - totalBills;
     return(
         <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4 mt-5">
             <Card >
@@ -59,7 +74,21 @@ export async function DashboardStats() {
                     <DollarSign className="h-4 w-4 text-green-500"/>
                 </CardHeader>
                 <CardContent>
-                        <p className="text-2xl font-bold">${totalRevenue}</p>
+                        <p  className={`text-2xl font-bold ${totalRevenue < 0 ? "text-red-500" : "text-black"}`}>
+                            ${totalRevenue}
+                            </p>
+                        <p className="text-sm text-muted-foreground">Basado en el ultimo mes</p>
+                    </CardContent>
+            </Card>
+            <Card >
+                <CardHeader className="flex flex-row items-center justify-between pb-2"> 
+                    <CardTitle>
+                        Gastos Totales
+                    </CardTitle>
+                    <DollarSign className="h-4 w-4 text-red-500"/>
+                </CardHeader>
+                <CardContent>
+                        <p className="text-2xl font-bold text-red-500">${totalBills}</p>
                         <p className="text-sm text-muted-foreground">Basado en el ultimo mes</p>
                     </CardContent>
             </Card>

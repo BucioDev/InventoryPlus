@@ -74,3 +74,8 @@ export const orderSchema = z.object({
   userId:z.string().min(1),
   items: z.array(orderItemSchema).min(1, "Debes agregar al menos un producto"),
 });
+
+export const gastosSchema = z.object({
+    name: z.string("Agregar nombre o razon del gasto"),
+    amount: z.number("Requerido"),
+})

@@ -11,7 +11,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url   = env("DATABASE_URL")
 }
 
 model User {
@@ -120,6 +120,16 @@ model OrderItem {
   product Product @relation(fields: [productId], references: [id])
   quantity Int
   priceAtSale Float
+}
+
+model Gastos {
+  id      String @id @default(uuid())
+  name    String
+  amount  Int 
+  isDeleted Boolean @default(false)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Notifications{

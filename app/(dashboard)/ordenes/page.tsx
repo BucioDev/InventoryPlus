@@ -58,7 +58,7 @@ async function GetOrders(){
 
 export default async function OrdenesPage(){
     const orders = await GetOrders();
-     const session = await isLoggedIn();
+    const session = await isLoggedIn();
     return(
         <>
         <div className="flex items-center justify-end mt-5">

@@ -4,7 +4,7 @@ import { sessionOptions, SessionData, defaultSession } from "./lib";
 import { cookies } from "next/headers";
 import prisma from "./lib/prisma";
 import { parseWithZod } from "@conform-to/zod/v4";
-import { categorySchema, loginSchema, orderSchema, productSchema, proveedoresSchema, sucursalSchema, userSchema, userSchemaWithoutPass } from "./lib/zodSchemas";
+import { categorySchema, gastosSchema, loginSchema, orderSchema, productSchema, proveedoresSchema, sucursalSchema, userSchema, userSchemaWithoutPass } from "./lib/zodSchemas";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { SubmissionResult } from "@conform-to/react";
@@ -729,6 +729,89 @@ export async function DeleteProveedor(formData:FormData){
     redirect("/proveedores?action=deleted&entity=proveedor");
 }
 
+//------------------------------------Gastos Actions -------------------------------------
+
+export async function createGasto(prevState: unknown, formData:FormData){
+
+    const session = await getSesion();
+
+    if (session.role !== "admin") {
+    redirect("/");
+    }
+
+    const submission = parseWithZod(formData,{
+        schema:gastosSchema
+    });
+
+    if(submission.status !== "success"){
+        return submission.reply();
+    }
+
+
+    await prisma.gastos.create({
+        data:{
+            name:submission.value.name,
+            amount:submission.value.amount,
+        }
+    })
+
+    await createLog(session.userId as string, `Agrego un nuevo Gasto`);
+
+    redirect("/gastos?action=created&entity=gasto");
+}
+
+export async function editGasto(prevState: any, formData:FormData){
+
+    const session = await getSesion();
+
+    if (session.role !== "admin") {
+    redirect("/");
+    }
+
+    const submission = parseWithZod(formData, {schema:gastosSchema});
+    if(submission.status !== "success"){
+        return submission.reply();
+    }
+
+    const id = formData.get("id") as string;
+
+    await prisma.gastos.update({
+        where:{
+            id:id,
+        },
+        data:{
+            name:submission.value.name,
+            amount:submission.value.amount,
+        }
+    })
+
+    await createLog(session.userId as string, `Edito los datos del gasto `);
+
+    redirect("/gastos?action=updated&entity=Gasto");
+}
+
+export async function DeleteGasto(formData:FormData){
+
+    const session = await getSesion();
+
+    if (session.role !== "admin") {
+    redirect("/");
+    }
+
+    const id = formData.get("id") as string;
+
+    await prisma.gastos.update({
+        where:{
+            id:id,
+        },
+        data:{
+            isDeleted:true,
+        }
+    })
+    await createLog(session.userId as string, `Elimino un Gasto `);
+
+    redirect("/gastos?action=deleted&entity=gasto");
+}
 
 //------------------------------------Order Actions - esta seccion tiene comentarios ya que cada acciones hace multiples mas acciones -------------------------------------
 
