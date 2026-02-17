@@ -41,7 +41,7 @@ const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ order, username }, r
     <div ref={ref} className="printable bg-white text-black">
 
       <h1 className="text-center font-bold text-lg">Moto Refacciones Pinos 32</h1>
-      <p className="text-center text-sm mb-2">Grasias por su compra</p>
+      <p className="text-center text-sm mb-2">Gracias por su compra</p>
 
       <hr className="my-2" />
       <p>Order ID: {order.id}</p>
