@@ -75,7 +75,7 @@ export async function DashboardStats() {
                 </CardHeader>
                 <CardContent>
                         <p  className={`text-2xl font-bold ${totalRevenue < 0 ? "text-red-500" : "text-black"}`}>
-                            ${totalRevenue}
+                            ${totalRevenue.toFixed(2)}
                             </p>
                         <p className="text-sm text-muted-foreground">Basado en el ultimo mes</p>
                     </CardContent>
@@ -88,7 +88,7 @@ export async function DashboardStats() {
                     <DollarSign className="h-4 w-4 text-red-500"/>
                 </CardHeader>
                 <CardContent>
-                        <p className="text-2xl font-bold text-red-500">${totalBills}</p>
+                        <p className="text-2xl font-bold text-red-500">${totalBills.toFixed(2)}</p>
                         <p className="text-sm text-muted-foreground">Basado en el ultimo mes</p>
                     </CardContent>
             </Card>
