@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { AddStock, copyProduct, TranferStock } from "@/app/actions";
 import { SubmitButton } from "../../SubmitButtons";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type Products = {
     id:string;
@@ -38,116 +39,129 @@ export default function TransfertockForm({productId, productName, location, barc
         setProducts(filteredProducts);
         };
 
-        const fetchSucursales = async () => {
-            const res = await fetch("/api/sucursales");
-            const data: Sucursal[] = await res.json();
-            const filterSucursales = data.filter((sucursal) => sucursal.name !== location)
-            setSucursales(filterSucursales)
-            
+       const fetchSucursales = async () => {
+        const params = new URLSearchParams();
+        params.append("barcode", barcode);
+
+        const res = await fetch(`/api/sucursales_sin_producto?${params.toString()}`);
+        const data: Sucursal[] = await res.json();
+
+        // Remove current sucursal (optional but recommended)
+        const filtered = data.filter(
+            (sucursal) => sucursal.name !== location
+        );
+
+        setSucursales(filtered);
         };
 
         fetchProducts().then(fetchSucursales);
     }, [productId, barcode]);
 
-    return(
-        <Dialog>  
-            <DialogTrigger asChild>
-                <Button variant="outline">Traspasar Stock </Button>
-            </DialogTrigger>
-           <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                    <DialogTitle>Traspasar Stock de {productName}</DialogTitle>
-                </DialogHeader>
+    return (
+  <Dialog>
+    <DialogTrigger asChild>
+      <Button variant="outline">Traspasar / Clonar</Button>
+    </DialogTrigger>
 
-                {products.length > 0 ? (
-                    /* ============================================================
-                    CASE 1: Product exists in another branch → Transfer Stock
-                    ============================================================ */
-                    <form action={TranferStock}>
-                    <div className="flex flex-col gap-6">
+    <DialogContent className="sm:max-w-[425px]">
+      <DialogHeader>
+        <DialogTitle>{productName}</DialogTitle>
+      </DialogHeader>
 
-                        <div className="flex flex-col gap-3">
-                        <Label>Cantidad a Traspasar</Label>
-                        <p className="text-sm">Esta cantidad se restará del stock actual.</p>
-                        <p className="text-sm">Y se sumará a la sucursal seleccionada.</p>
-                        <Input type="number" name="amount" placeholder="10" required />
-                        </div>
+      <Tabs defaultValue="transfer" className="w-full mt-4">
+        
+        {/* ================= TAB BUTTONS ================= */}
+        <TabsList className="grid grid-cols-2 w-full">
+          <TabsTrigger value="transfer">Traspasar</TabsTrigger>
+          <TabsTrigger value="clone">Clonar</TabsTrigger>
+        </TabsList>
 
-                        <div className="flex flex-col gap-3">
-                        <Label>Selecciona la Sucursal donde se enviará el Stock</Label>
+        {/* ================= TRANSFER TAB ================= */}
+        <TabsContent value="transfer">
+          {products.length > 0 ? (
+            <form action={TranferStock}>
+              <div className="flex flex-col gap-6 mt-4">
 
-                        <Select name="destiny" required>
-                            <SelectTrigger>
-                            <SelectValue placeholder="Selecciona la Sucursal Destino" />
-                            </SelectTrigger>
-                            <SelectContent>
-                            {products.map((product) => (
-                                <SelectItem key={product.id} value={product.id}>
-                                {product.location}
-                                </SelectItem>
-                            ))}
-                            </SelectContent>
-                        </Select>
-                        </div>
+                <div className="flex flex-col gap-3">
+                  <Label>Cantidad a Traspasar</Label>
+                  <Input type="number" name="amount" required />
+                </div>
 
-                        <input type="hidden" name="id" value={productId} />
-                    </div>
+                <div className="flex flex-col gap-3">
+                  <Label>Sucursal destino</Label>
+                  <Select name="destiny" required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona sucursal" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {products.map((product) => (
+                        <SelectItem key={product.id} value={product.id}>
+                          {product.location}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                    <DialogFooter className="flex justify-between mt-5">
-                        <DialogClose asChild>
-                        <Button type="button" variant="secondary">Cerrar</Button>
-                        </DialogClose>
+                <input type="hidden" name="id" value={productId} />
+              </div>
 
-                        <SubmitButton text="Traspasar Stock" />
-                    </DialogFooter>
-                    </form>
+              <DialogFooter className="flex justify-between mt-5">
+                <DialogClose asChild>
+                  <Button type="button" variant="secondary">
+                    Cerrar
+                  </Button>
+                </DialogClose>
 
-                ) : (
-                    /* ============================================================
-                    CASE 2: Product does NOT exist → Create Copy Form
-                    ============================================================ */
-                    <form action={copyProduct}> {/* You will set this action later */}
-                    <div className="flex flex-col gap-6">
+                <SubmitButton text="Traspasar Stock" />
+              </DialogFooter>
+            </form>
+          ) : (
+            <p className="text-sm text-red-500 mt-4">
+              No hay sucursales con este producto para transferir.
+            </p>
+          )}
+        </TabsContent>
 
-                        <p className="text-sm text-red-500 italic">
-                        El producto equivalente no ha sido encontrado en otra sucursal.
-                        Favor de registrarlo primero.
-                        </p>
+        {/* ================= CLONE TAB ================= */}
+        <TabsContent value="clone">
+          <form action={copyProduct}>
+            <div className="flex flex-col gap-6 mt-4">
 
-                        <div className="flex flex-col gap-3">
-                        <Label>Lugar donde Crear Copia del producto</Label>
+              <div className="flex flex-col gap-3">
+                <Label>Crear copia en sucursal</Label>
 
-                        <Select name="sucursalId" required>
-                            <SelectTrigger>
-                            <SelectValue placeholder="Selecciona una Sucursal" />
-                            </SelectTrigger>
-                            <SelectContent>
-                            {sucursales.map((sucursal) => (
-                                <SelectItem key={sucursal.id} value={sucursal.name}>
-                                {sucursal.name}
-                                </SelectItem>
-                            ))}
-                            </SelectContent>
-                        </Select>
-                        </div>
+                <Select name="sucursalId" required>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona sucursal" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sucursales.map((sucursal) => (
+                      <SelectItem key={sucursal.name} value={sucursal.name}>
+                        {sucursal.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-                        <input type="hidden" name="productId" value={productId} />
+              <input type="hidden" name="productId" value={productId} />
+            </div>
 
-                    </div>
+            <DialogFooter className="flex justify-between mt-5">
+              <DialogClose asChild>
+                <Button type="button" variant="secondary">
+                  Cerrar
+                </Button>
+              </DialogClose>
 
-                    <DialogFooter className="flex justify-between mt-5">
-                        <DialogClose asChild>
-                        <Button type="button" variant="secondary">Cerrar</Button>
-                        </DialogClose>
+              <SubmitButton text="Clonar Producto" />
+            </DialogFooter>
+          </form>
+        </TabsContent>
 
-                            <SubmitButton text="Crear Copia del Producto" />
-                    </DialogFooter>
-                    </form>
-                )}
-
-                </DialogContent>
-
-        </Dialog>
-    )
-
+      </Tabs>
+    </DialogContent>
+  </Dialog>
+)
 }

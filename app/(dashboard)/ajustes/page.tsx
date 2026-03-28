@@ -15,7 +15,14 @@ export default function AjustesPage() {
                     <CardTitle>Bienvenido a  Ajustes</CardTitle>
                 </CardHeader>
                 <CardContent className="flex  gap-5">
-
+                    <Button asChild>
+                        <Link href="/ajustes/logs">Resgistros de actividad</Link>
+                    </Button>
+                    {/*
+                     <Button asChild>
+                        <Link href="/ajustes/reportes">Reportes</Link>
+                    </Button>
+                    */}
                 </CardContent>
             </Card>
         </div>
