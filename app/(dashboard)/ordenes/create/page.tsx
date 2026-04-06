@@ -179,6 +179,7 @@ export default function CreateOrderPage(){
                             <Input  type="text"
                             name={fields.nickname.name}
                             id={fields.nickname.id}/>
+                            <p className="text-red-500">{fields.nickname.errors}</p>
                         </div>
                         <div className="flex flex-col gap-3">
                             <Label> Estado de la orden </Label>
@@ -193,6 +194,7 @@ export default function CreateOrderPage(){
                                     <SelectItem value="cancelado"> Cancelada</SelectItem>
                                 </SelectContent>
                             </Select>
+                            <p className="text-red-500">{fields.status.errors}</p>
                         </div>
                          <div 
                                 className="flex flex-col gap-3"
@@ -220,6 +222,12 @@ export default function CreateOrderPage(){
                                         ))}
                                     </SelectContent>
                                     </Select>
+                                    <input
+                                        type="hidden"
+                                        name={fields.location.name}
+                                        value={location}
+                                    />
+                                    <p className="text-red-500">{fields.location.errors}</p>
                                 </div>
 
                         <div className="flex flex-col gap-3">
@@ -233,6 +241,7 @@ export default function CreateOrderPage(){
                                     <SelectItem value="completada">Tarjeta</SelectItem>
                                 </SelectContent>
                             </Select>
+                            <p className="text-red-500">{fields.paymentmethod.errors}</p>
                         </div>
                         <div className="flex flex-col gap-3">
                             {selectedProducts.length > 0 && (

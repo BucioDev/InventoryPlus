@@ -18,11 +18,9 @@ export default function AjustesPage() {
                     <Button asChild>
                         <Link href="/ajustes/logs">Resgistros de actividad</Link>
                     </Button>
-                    {/*
                      <Button asChild>
                         <Link href="/ajustes/reportes">Reportes</Link>
                     </Button>
-                    */}
                 </CardContent>
             </Card>
         </div>

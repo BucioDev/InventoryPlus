@@ -99,8 +99,8 @@ export default function InventarioPage() {
     }
 
     return ( 
-<div className="grid  gap-4 mt-5 ">
-    <div className="col-span-3 col-start-1">
+<div className="grid w-[97vw]  gap-4 mt-5 ">
+    <div className="col-span-3 w-[97vw] col-start-1">
         <Card className="max-w-8xl">
         <CardHeader>
                 <CardTitle>Acciones</CardTitle>
@@ -111,7 +111,7 @@ export default function InventarioPage() {
             </CardContent>
         </Card>
     </div>
-    <div className="">
+    <div className="flex w-[97vw] overflow-x-auto">
         <Card className="flex max-w-8xl overflow-x-auto">
             <CardHeader>
                 <CardTitle>Productos</CardTitle>
