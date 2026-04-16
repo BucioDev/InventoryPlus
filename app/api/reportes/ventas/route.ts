@@ -57,6 +57,7 @@ export async function GET(req: Request) {
     const expenses = await prisma.gastos.aggregate({
       _sum: { amount: true },
       where: {
+        isDeleted: false,
         ...(start && end
           ? { createdAt: { gte: start, lte: end } }
           : {}),
