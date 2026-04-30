@@ -103,6 +103,11 @@ model Order{
   orderPrice Float
   paymentmethod String?
   location String?
+  debt    Float?
+  pay_debt Float?
+  change  Float?
+  pay_received Float?
+  last_payment Float?
   userID String
   user User @relation(fields: [userID], references: [id])
   items      OrderItem[]

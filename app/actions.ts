@@ -21,86 +21,9 @@ async function verifyPassword(password:string, hash:string){
     return await bcrypt.compare(password, hash);
 }
 
-export async function getSesion() {
-    const cookieStore  = await cookies();
-
-    const session = await getIronSession<SessionData>(cookieStore, sessionOptions)
 
 
-    return session
-}
 
-export async function isLoggedIn(){
-    const session = await getSesion();
-
-    if(!session.isLoggedIn){
-        session.isLoggedIn = defaultSession.isLoggedIn;
-        redirect("/login");
-    }
-    return session;
-}
-
-export async function login(prevState: unknown, formData:FormData){
-
-    const session = await getSesion();
-
-    const submission = parseWithZod(formData,{
-        schema:loginSchema
-    });
-
-    if(submission.status !== "success"){
-        return submission.reply();
-    }
-
-    // check if user exists
-    const user = await prisma.user.findFirst({
-        where:{
-            username:submission.value.username,
-            isDeleted:false
-        }
-    })
-
-    if(!user ){
-        return submission.reply({
-            formErrors:["Usuario o contraseña incorrectos"],
-        });
-    }
-
-    const dummyHash = "$2a$12$9bbYvWc5LspT9BlWv9nUMOjT3CM4fRUTh/ZPQq7EwDbQ7qv5d32ZK"; // hash of "dummy"
-
-    // Pick real hash if user exists, otherwise dummy
-    const hashToCheck = user?.password ?? dummyHash;
-
-    const verification = await verifyPassword(submission.value.password, hashToCheck);
-
-    if(!verification ){
-        return submission.reply({
-            formErrors:["Usuario o contraseña incorrectos"],
-        });
-    }
-
-    await createLog(user.id, "Inicio Session");
-
-    session.userId = user.id;
-    session.userName = user.username;
-    session.firstName = user.firstName;
-    session.role = user.role;
-    session.location = user.location || "",
-    session.img = user.img || "";
-    session.isLoggedIn = true;
-
-    await session.save();
-
-    redirect("/");
-}
-
-export async function logout(){
-    const session = await getSesion();
-    await createLog(session.userId as string, "Cerro Session");
-    session.destroy();
-    
-    redirect("/login");
-}
 
 //------------------------------------User Actions -------------------------------------
 export async function createUser(prevState: unknown, formData:FormData){
@@ -227,6 +150,69 @@ export async function changePassword(formData:FormData){
     await createLog(session.userId as string, `Cambio la contraseña del Usuario ${formData.get("username")}`);
 
     redirect("/usuarios");
+}
+
+
+export async function login(prevState: unknown, formData:FormData){
+
+    const session = await getSesion();
+
+    const submission = parseWithZod(formData,{
+        schema:loginSchema
+    });
+
+    if(submission.status !== "success"){
+        return submission.reply();
+    }
+
+    // check if user exists
+    const user = await prisma.user.findFirst({
+        where:{
+            username:submission.value.username,
+            isDeleted:false
+        }
+    })
+
+    if(!user ){
+        return submission.reply({
+            formErrors:["Usuario o contraseña incorrectos"],
+        });
+    }
+
+    const dummyHash = "$2a$12$9bbYvWc5LspT9BlWv9nUMOjT3CM4fRUTh/ZPQq7EwDbQ7qv5d32ZK"; // hash of "dummy"
+
+    // Pick real hash if user exists, otherwise dummy
+    const hashToCheck = user?.password ?? dummyHash;
+
+    const verification = await verifyPassword(submission.value.password, hashToCheck);
+
+    if(!verification ){
+        return submission.reply({
+            formErrors:["Usuario o contraseña incorrectos"],
+        });
+    }
+
+    await createLog(user.id, "Inicio Session");
+
+    session.userId = user.id;
+    session.userName = user.username;
+    session.firstName = user.firstName;
+    session.role = user.role;
+    session.location = user.location || "",
+    session.img = user.img || "";
+    session.isLoggedIn = true;
+
+    await session.save();
+
+    redirect("/");
+}
+
+export async function logout(){
+    const session = await getSesion();
+    await createLog(session.userId as string, "Cerro Session");
+    session.destroy();
+    
+    redirect("/login");
 }
 
 //------------------------------------log Actions -------------------------------------
@@ -820,246 +806,356 @@ export async function createOrder(prevState: unknown, formData: FormData): Promi
     const session = await getSesion();
   
     if (!session) {
-    redirect("/");
+      redirect("/");
     }
-
   
     const submission = parseWithZod(formData, { schema: orderSchema });
-    if (submission.status !== "success")  
-        return {
+  
+    if (submission.status !== "success") {
+      return {
         ...submission,
         error: submission.error ?? undefined,
       };
-
-  const { nickname, status, items } = submission.value;
-  const total = items.reduce(
-    (sum, item) => sum + item.quantity * item.priceAtSale,
-    0
-  );
-
-  const productIds = items.map((item) => item.productId);
-
-  const products = await prisma.product.findMany({
-    where: { id: { in: productIds } },
-    select: { id: true, buyprice: true},
-  });
-
-  //check if that we have enough stock before creatign the order
-const stockErrors = [];
-
-for (const item of items) {
-  const product = await prisma.product.findUnique({
-    where: { id: item.productId },
-    select: { stock: true, name:true},
-  });
-
-  if (!product) {
-    stockErrors.push(`Producto ${item.productId} no encontrado.`);
-    continue;
-  }
-
-  if (item.quantity > product.stock) {
-    stockErrors.push(
-      `Cantidad solicitada (${item.quantity}) excede el stock disponible (${product.stock}) para producto ${product.name}.`
+    }
+  
+    const {
+      nickname,
+      status,
+      items,
+      paymentmethod,
+      location,
+      userId,
+    } = submission.value;
+  
+    
+    const remainingDebt = getNumber(formData.get("remainingDebt"));
+    const payReceived = getNumber(formData.get("pay_received"));
+    const change = getNumber(formData.get("change"));
+  
+    // =====================================================
+    //  CALCULATIONS
+    // =====================================================
+  
+    const total = items.reduce(
+      (sum, item) => sum + item.quantity * item.priceAtSale,
+      0
     );
-  }
-}
+  
+    const productIds = items.map((item) => item.productId);
+  
+    // Fetch ALL products 
+    const products = await prisma.product.findMany({
+      where: { id: { in: productIds } },
+      select: {
+        id: true,
+        buyprice: true,
+        stock: true,
+        name: true,
+        alertammount: true,
+      },
+    });
+  
+    // =====================================================
+    // STOCK VALIDATION
+    // =====================================================
+  
+    const stockErrors: string[] = [];
+  
+    for (const item of items) {
+      const product = products.find((p) => p.id === item.productId);
+  
+      if (!product) {
+        stockErrors.push(`Producto ${item.productId} no encontrado.`);
+        continue;
+      }
+  
+      if (item.quantity > product.stock) {
+        stockErrors.push(
+          `Cantidad (${item.quantity}) excede stock (${product.stock}) para ${product.name}`
+        );
+      }
+    }
+  
+    if (stockErrors.length > 0) {
+      redirect("/ordenes?error=Stock insuficiente en uno o más productos");
+    }
+  
+    // =====================================================
+    //  INTERNAL COST
+    // =====================================================
+  
+    const orderPrice = items.reduce((sum, item) => {
+      const product = products.find((p) => p.id === item.productId);
+      const buyPrice = product?.buyprice || 0;
+      return sum + item.quantity * buyPrice;
+    }, 0);
+  
+    // =====================================================
+    //  CREATE ORDER
+    // =====================================================
+  
+    const order = await prisma.order.create({
+      data: {
+        nickname,
+        status,
+        paymentmethod: paymentmethod || null,
+        location: location || null,
 
-if (stockErrors.length > 0) {
-  redirect("/ordenes?error=Stock insuficiente en uno o más productos")
-  return;
-}
-
-                        //creating order  and summing the total of all products
-  const orderPrice = items.reduce((sum, item) => {
-    const product = products.find((p) => p.id === item.productId);
-    const buyPrice = product?.buyprice || 0;
-    return sum + item.quantity * buyPrice;
-  }, 0);
-
-  const orderData = {
-    nickname:submission.value.nickname,
-    status:submission.value.status,
-    paymentmethod: submission.value.paymentmethod || null,
-    location:submission.value.location || null,
-    userID:submission.value.userId,
-    total,
-    orderPrice,
-    ...(status === "completada" && { sellDate: new Date() }), // Optional sellDate
-    items: {
-      create: items.map((item) => ({
-        productId: item.productId,
-        quantity: item.quantity,
-        priceAtSale: item.priceAtSale,
-      })),
-    },
-  };
-  const order =  await prisma.order.create({ data: orderData });
-
-  //updating the stock of the products
-let updatedProducts: { id: string; stock: number; alertammount: number, name:string }[] = [];
-
-if (order.status === "completada") {
-  updatedProducts = await Promise.all(
-    items.map((item) =>
-      prisma.product.update({
-        where: { id: item.productId },
-        data: {
-          stock: { decrement: item.quantity },
+        debt: remainingDebt,
+        pay_debt: payReceived,
+        pay_received: payReceived,
+        last_payment: payReceived,
+        change: change,
+  
+        userID: userId,
+  
+        total,
+        orderPrice,
+  
+        ...(status === "completada" && { sellDate: new Date() }),
+  
+        items: {
+          create: items.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            priceAtSale: item.priceAtSale,
+          })),
         },
-        select: {
-          id: true,
-          stock: true,
-          alertammount: true,
-          name:true
-        },
-      })
-    )
-  );
-}
+      },
+    });
+  
+    // =====================================================
+    // STOCK UPDATE
+    // =====================================================
+  
+    let updatedProducts: {
+      id: string;
+      stock: number;
+      alertammount: number;
+      name: string;
+    }[] = [];
+  
+    const shouldAffectStock =
+      status === "activo" || status === "completada";
+  
+    if (shouldAffectStock) {
+      updatedProducts = await Promise.all(
+        items.map((item) =>
+          prisma.product.update({
+            where: { id: item.productId },
+            data: {
+              stock: { decrement: item.quantity },
+            },
+            select: {
+              id: true,
+              stock: true,
+              alertammount: true,
+              name: true,
+            },
+          })
+        )
+      );
+    }
+  
+    // =====================================================
+    // LOW STOCK ALERT - LOG - REDIRECT
+    // =====================================================
+  
+    const lowStock = updatedProducts.filter(
+      (p) => p.stock <= p.alertammount
+    );
+  
+    if (lowStock.length > 0) {
+      const productNames = lowStock.map((p) => p.name).join(", ");
+      await createNotification(`Stock bajo en los productos: ${productNames}`);
+    }
+  
+    await createLog(
+      session.userId as string,
+      `Creo una Orden para ${nickname}`
+    );
 
-// checking if low stock alert need to be sent
-const lowStock = updatedProducts.filter(
-  (p) => p.stock <= p.alertammount
-);
-
-if (lowStock.length > 0) {
-  const productNames = lowStock.map(p => p.name).join(", ");
-  await createNotification(`Stock bajo en  los productos: ${productNames}`);
-}
-
-
-
-  await createLog(session.userId as string, `Creo una Orden para ${formData.get("name")}`);
-
-  if (order.status === "completada") {
-  redirect(`/print-receipt/${order.id}?action=created&entity=orden`);
-}
-
-
+    if (order.status === "completada") {
+      redirect(`/print-receipt/${order.id}?action=created&entity=orden`);
+    }
+  
     redirect("/ordenes?action=created&entity=orden");
-    return
-
 }
-
 
 export async function editOrder(prevState: any, formData: FormData) {
-   const session = await getSesion();
-
+    const session = await getSesion();
+  
     if (!session) {
-    redirect("/");
+      redirect("/");
     }
-
+  
     const id = formData.get("id") as string;
+  
+    const submission = parseWithZod(formData, { schema: orderSchema });
+    if (submission.status !== "success") return submission;
+  
+    const { nickname, status, items, paymentmethod, location, userId } = submission.value;
+  
 
-  const submission = parseWithZod(formData, { schema: orderSchema });
-  if (submission.status !== "success") return submission;
-
-  const { nickname, status, items } = submission.value;
-  const total = items.reduce(
-    (sum, item) => sum + item.quantity * item.priceAtSale,
-    0
-  );
-
-  const productIds = items.map((item) => item.productId);
-
-  const products = await prisma.product.findMany({
-    where: { id: { in: productIds } },
-    select: { id: true, buyprice: true},
-  });
-
-  //check if that we have enough stock before creatign the order
-const stockErrors = [];
-
-for (const item of items) {
-  const product = await prisma.product.findUnique({
-    where: { id: item.productId },
-    select: { stock: true, name:true},
-  });
-
-  if (!product) {
-    stockErrors.push(`Producto ${item.productId} no encontrado.`);
-    continue;
-  }
-
-  if (item.quantity > product.stock) {
-    stockErrors.push(
-      `Cantidad solicitada (${item.quantity}) excede el stock disponible (${product.stock}) para producto ${product.name}.`
+  
+    const debt = getNumber(formData.get("remainingDebt"));
+    const payDebt = getNumber(formData.get("payDebt"));
+    const payReceived = getNumber(formData.get("pay_received"));
+    const change = getNumber(formData.get("change"));
+  
+    // Get existing order (IMPORTANT)
+    const existingOrder = await prisma.order.findUnique({
+      where: { id },
+      include: { items: true },
+    });
+  
+    if (!existingOrder) {
+      throw new Error("Order not found");
+    }
+  
+    const total = items.reduce(
+      (sum, item) => sum + item.quantity * item.priceAtSale,
+      0
     );
-  }
-}
-
-if (stockErrors.length > 0) {
-  redirect("/ordenes?error=Stock insuficiente en uno o más productos")
-}
-
-                        //updating order  and summing the total of all products
-            const orderPrice = items.reduce((sum, item) => {
-                const product = products.find((p) => p.id === item.productId);
-                const buyPrice = product?.buyprice || 0;
-                return sum + item.quantity * buyPrice;
-            }, 0);
-
-                   const order = await prisma.order.update({
-                    where: { id },
-                    data: {
-                        nickname,
-                        status,
-                        paymentmethod: submission.value.paymentmethod || null,
-                        location:submission.value.location || null,
-                        userID:submission.value.userId,
-                        total,
-                        orderPrice,
-                        ...(status === "completada" && { sellDate: new Date() }),
-                        
-                        items: {
-                        deleteMany: {}, // ✅ Deletes all related items for this order
-                        create: items.map((item) => ({
-                            productId: item.productId,
-                            quantity: item.quantity,
-                            priceAtSale: item.priceAtSale,
-                        })),
-                        },
-                    },
-                    });
-
-  //updating the stock of the products
-let updatedProducts: { id: string; stock: number; alertammount: number, name:string }[] = [];
-
-if (order.status === "completada") {
-  updatedProducts = await Promise.all(
-    items.map((item) =>
-      prisma.product.update({
-        where: { id: item.productId },
-        data: {
-          stock: { decrement: item.quantity },
+  
+    const productIds = items.map((item) => item.productId);
+  
+    const products = await prisma.product.findMany({
+      where: { id: { in: productIds } },
+      select: { id: true, buyprice: true, stock: true, name: true },
+    });
+  
+    //  STOCK VALIDATION 
+    const stockErrors = [];
+  
+    for (const item of items) {
+      const product = products.find(p => p.id === item.productId);
+  
+      if (!product) {
+        stockErrors.push(`Producto ${item.productId} no encontrado.`);
+        continue;
+      }
+  
+      if (item.quantity > product.stock) {
+        stockErrors.push(
+          `Cantidad (${item.quantity}) excede stock (${product.stock}) para ${product.name}`
+        );
+      }
+    }
+  
+    if (stockErrors.length > 0) {
+      redirect("/ordenes?error=Stock insuficiente");
+    }
+  
+    //Calculate internal cost
+    const orderPrice = items.reduce((sum, item) => {
+      const product = products.find((p) => p.id === item.productId);
+      const buyPrice = product?.buyprice || 0;
+      return sum + item.quantity * buyPrice;
+    }, 0);
+  
+    // =====================================================
+    // STOCK CONTROL LOGIC 
+    // =====================================================
+  
+    const wasAffectingStock =
+      existingOrder.status === "activo" ||
+      existingOrder.status === "completada";
+  
+    const willAffectStock =
+      status === "activo" || status === "completada";
+  
+    // RESTORE previous stock if order was affecting stock
+    if (wasAffectingStock) {
+      await Promise.all(
+        existingOrder.items.map((item) =>
+          prisma.product.update({
+            where: { id: item.productId },
+            data: {
+              stock: { increment: item.quantity },
+            },
+          })
+        )
+      );
+    }
+  
+    // UPDATE ORDER
+    const order = await prisma.order.update({
+      where: { id },
+      data: {
+        nickname,
+        status,
+        paymentmethod: paymentmethod || null,
+        location: location || null,
+        debt: debt,
+        pay_debt: payDebt,
+        last_payment: payReceived,
+        change: change,
+        userID: userId,
+        total,
+        orderPrice,
+        ...(status === "completada" && { sellDate: new Date() }),
+  
+        items: {
+          deleteMany: {},
+          create: items.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            priceAtSale: item.priceAtSale,
+          })),
         },
-        select: {
-          id: true,
-          stock: true,
-          alertammount: true,
-          name:true
-        },
-      })
-    )
-  );
-}
-
-// checking if low stock alert need to be sent
-const lowStock = updatedProducts.filter(
-  (p) => p.stock <= p.alertammount
-);
-
-if (lowStock.length > 0) {
-  const productNames = lowStock.map(p => p.name).join(", ");
-   await createNotification(`Stock bajo en los productos: ${productNames}`);
-}
-    await createLog(session.userId as string, `Actualizo la Orden para ${formData.get("name")}`);
-
-     if (order.status === "completada") {
-  redirect(`/print-receipt/${order.id}?action=updated&entity=orden`);
+      },
+    });
+  
+    // APPLY NEW STOCK (only if needed)
+    let updatedProducts: {
+      id: string;
+      stock: number;
+      alertammount: number;
+      name: string;
+    }[] = [];
+  
+    if (willAffectStock) {
+      updatedProducts = await Promise.all(
+        items.map((item) =>
+          prisma.product.update({
+            where: { id: item.productId },
+            data: {
+              stock: { decrement: item.quantity },
+            },
+            select: {
+              id: true,
+              stock: true,
+              alertammount: true,
+              name: true,
+            },
+          })
+        )
+      );
+    }
+  
+    // =====================================================
+    //  LOW STOCK ALERT - LOG - Redirect
+    // =====================================================
+  
+    const lowStock = updatedProducts.filter(
+      (p) => p.stock <= p.alertammount
+    );
+  
+    if (lowStock.length > 0) {
+      const productNames = lowStock.map(p => p.name).join(", ");
+      await createNotification(`Stock bajo en: ${productNames}`);
     }
 
+    await createLog(
+      session.userId as string,
+      `Actualizo la Orden para ${nickname}`
+    );
+
+    if (order.status === "completada") {
+      redirect(`/print-receipt/${order.id}?action=updated&entity=orden`);
+    }
+  
     redirect("/ordenes?action=updated&entity=orden");
 }
 
@@ -1126,6 +1222,10 @@ export async function getOrderData(orderId: string) {
       status: true,
       paymentmethod: true,
       location: true,
+      debt:true,
+      pay_debt:true,
+      last_payment:true,
+      change:true,
       userID: true,
       sellDate: true,
       user: {
@@ -1173,3 +1273,32 @@ export async function MarkAsRead(formData:FormData){
     })
 }
 
+
+
+// --------------Helper funtions-----------
+
+
+export async function getSesion() {
+    const cookieStore  = await cookies();
+
+    const session = await getIronSession<SessionData>(cookieStore, sessionOptions)
+
+
+    return session
+}
+
+export async function isLoggedIn(){
+    const session = await getSesion();
+
+    if(!session.isLoggedIn){
+        session.isLoggedIn = defaultSession.isLoggedIn;
+        redirect("/login");
+    }
+    return session;
+}
+
+    // Helper for safe numbers
+    function getNumber(value: FormDataEntryValue | null) {
+        const num = Number(value);
+        return isNaN(num) ? 0 : num;
+      }

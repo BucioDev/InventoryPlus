@@ -67,6 +67,11 @@ export default function CreateOrderPage(){
         const [compatibility, setCompatibility] = useState<string[]>([]);
         const [products, setProducts] = useState<any[]>([]);
         const [categories, setCategories] = useState<Category[]>([]);
+        const [paymentMethod, setPaymentMethod] = useState<string>("");
+        const [subtotal, setSubtotal] = useState(0);
+        const [changeAmount, setChangeAmount] = useState(0);
+        const [cashReceived, setCashReceived] = useState<string>("");
+        const [remainingDebt, setRemainingDebt] = useState(0);
         const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null);
         const [sucursales, setSucursales] = useState<Sucursal[]>([]);
 
@@ -151,6 +156,31 @@ export default function CreateOrderPage(){
         }
 
 
+        function handlePayment() {
+            const currentSubtotal = selectedProducts.reduce(
+              (sum, item) => sum + item.quantity * item.priceAtSale,
+              0
+            );
+            const received = parseFloat(cashReceived) || 0;
+            let change = 0;
+            let debt = 0;
+            let paid = received;
+
+            if (paymentMethod === "efectivo") {
+              change = Math.max(received - currentSubtotal, 0);
+              paid = Math.min(received, currentSubtotal);
+              debt = Math.max(currentSubtotal - paid, 0);
+            } else {
+              change = 0;
+              paid = Math.min(received, currentSubtotal);
+              debt = Math.max(currentSubtotal - paid, 0);
+            }
+          
+            setSubtotal(currentSubtotal);
+            setChangeAmount(change);
+            setRemainingDebt(debt);
+          }
+
 
     return(
         <div className="mt-5 flex flex-col gap-6">
@@ -232,13 +262,14 @@ export default function CreateOrderPage(){
 
                         <div className="flex flex-col gap-3">
                             <Label> Metodo de pago </Label>
-                            <Select name={fields.paymentmethod.name} key={fields.paymentmethod.key} >
+                            <Select name={fields.paymentmethod.name} key={fields.paymentmethod.key} 
+                            onValueChange={(value) => setPaymentMethod(value)}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Escoger una opcion"/>
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="efectivo"> Efectivo</SelectItem>
-                                    <SelectItem value="completada">Tarjeta</SelectItem>
+                                    <SelectItem value="tarjeta">Tarjeta</SelectItem>
                                 </SelectContent>
                             </Select>
                             <p className="text-red-500">{fields.paymentmethod.errors}</p>
@@ -325,14 +356,56 @@ export default function CreateOrderPage(){
                                 )}
 
                         </div>
-                        <div className="mt-4 flex justify-end">
-                            <Label className="text-lg">
-                                Subtotal de la orden:{" "}
-                                <span className="font-bold">
-                                ${selectedProducts.reduce((sum, item) => sum + item.quantity * item.priceAtSale, 0).toFixed(2)}
-                                </span>
-                            </Label>
+                        <div className="mt-4 flex justify-between gap-10">
+                            
+                        <div className="flex justify-end">
+                            <Label className="text-lg">Pago Recibido:</Label>
+                            <Input
+                            type="number"
+                            value={cashReceived}
+                            onChange={(e) => setCashReceived(e.target.value)}
+                            name={fields.pay_received.name}
+                            id={fields.pay_received.id}
+                            />
+                        </div>
+                            <div className="flex justify-end">
+                                <Button type="button"
+                                onClick={handlePayment}>
+                                    Pagar / Abonar
+                                </Button>
                             </div>
+                            {paymentMethod === "efectivo" && (
+                                <div className="flex justify-end">
+                                    <Label className="text-lg">Cambio:</Label>
+                                    <span className="font-bold ml-2">
+                                    ${changeAmount.toFixed(2)}
+                                    </span>
+
+                                    <input
+                                    type="hidden"
+                                    value={changeAmount}
+                                    name={fields.change.name}
+                                    id={fields.change.id}
+                                    />
+                                </div>
+                                )}
+                            <div className="flex justify-end">
+                                <Label className="text-lg">Deuda pendiente:</Label>
+                                <span className="font-bold ml-2">
+                                    ${remainingDebt.toFixed(2)}
+                                </span>
+                                <input type="hidden" value={remainingDebt.toFixed(2)}
+                                name="remainingDebt" id="remainingDebt"/>
+                            </div>
+                            <div className="flex justify-end">
+                                <Label className="text-lg">
+                                    Subtotal de la orden:{" "}
+                                    <span className="font-bold">
+                                    ${selectedProducts.reduce((sum, item) => sum + item.quantity * item.priceAtSale, 0).toFixed(2)}
+                                    </span>
+                                </Label>
+                            </div>
+                        </div>
                     </div>
                 </CardContent>
                 <CardFooter className="flex justify-end mt-5">

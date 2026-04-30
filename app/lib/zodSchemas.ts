@@ -70,6 +70,8 @@ export const orderSchema = z.object({
   nickname: z.string("El nombre es requerido").min(1, "El nombre es requerido"),
   status: z.enum(["activo", "completada", "cancelado"],"Se debe seleccionar una opcion"),
   paymentmethod: z.string().optional(),
+  pay_received: z.number().optional(),
+  change: z.number().optional(),
   location: z.string("Se requiere una sucursal"),
   userId:z.string().min(1),
   items: z.array(orderItemSchema).min(1, "Debes agregar al menos un producto"),

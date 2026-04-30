@@ -16,8 +16,11 @@ async function GetOrder(id:string){
             id:true,
             nickname:true,
             status:true,
+            total:true,
             paymentmethod:true,
             location:true,
+            debt:true,
+            pay_debt:true,
             items:{
                 select:{
                     quantity:true,

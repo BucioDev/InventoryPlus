@@ -20,6 +20,10 @@ async function GetOrders(){
             status: true,
             paymentmethod:true,
             location:true,
+            debt:true,
+            pay_debt:true,
+            last_payment:true,
+            change:true,
             userID:true,
             sellDate: true,
             user:{

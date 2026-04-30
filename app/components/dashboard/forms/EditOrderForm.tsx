@@ -51,8 +51,11 @@ interface SessionInfo {
     id: string;
     nickname: string;
     status: string;
+    total: number;
     paymentmethod: string | null;
     location: string | null;
+    debt: number | null;
+    pay_debt: number | null;
     items: OrderItemData[];
   };
 }
@@ -88,6 +91,19 @@ export default function EditOrderForm({data}: EditOrderProps){
         const [compatibility, setCompatibility] = useState<string[]>([]);
         const [products, setProducts] = useState<any[]>([]);
         const [categories, setCategories] = useState<Category[]>([]);
+
+        const [paymentMethod, setPaymentMethod] = useState<string>(
+            data.paymentmethod ?? ""
+        );
+        const [changeAmount, setChangeAmount] = useState(0);
+        const [cashReceived, setCashReceived] = useState<string>("");
+        const [remainingDebt, setRemainingDebt] = useState(
+            data.debt ?? data.total ?? 0
+        );
+        const [paidDebt, setPaidDebt] = useState(
+            data.pay_debt ?? 0
+        );
+
         const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null);
         const [sucursales, setSucursales] = useState<Sucursal[]>([]);
 
@@ -187,6 +203,33 @@ export default function EditOrderForm({data}: EditOrderProps){
         }
 
 
+        
+          
+        function handlePayment() {
+            const received = parseFloat(cashReceived) || 0;
+          
+            const previousDebt = data.debt ?? data.total ?? 0;
+            const previousPaid = data.pay_debt ?? 0;
+          
+            // ✅ THIS is the key change:
+            const actualPayment = Math.min(received, previousDebt);
+          
+            const newDebt = Math.max(previousDebt - actualPayment, 0);
+          
+            // ✅ allow overpayment tracking
+            const newTotalPaid = previousPaid + received;
+          
+            let change = 0;
+          
+            if (paymentMethod === "efectivo") {
+              change = Math.max(received - previousDebt, 0);
+            }
+          
+            setChangeAmount(change);
+            setRemainingDebt(newDebt);
+            setPaidDebt(newTotalPaid);
+          }
+
 
     return(
         <div className="mt-5 flex flex-col gap-6">
@@ -255,13 +298,14 @@ export default function EditOrderForm({data}: EditOrderProps){
                         </div>
                         <div className="flex flex-col gap-3">
                             <Label> Metodo de pago </Label>
-                            <Select name={fields.paymentmethod.name} key={fields.paymentmethod.key} defaultValue={data.paymentmethod ?? ""} >
+                            <Select name={fields.paymentmethod.name} key={fields.paymentmethod.key} defaultValue={data.paymentmethod ?? ""} 
+                            onValueChange={(value) => setPaymentMethod(value)}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Escoger una opcion"/>
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="efectivo"> Efectivo</SelectItem>
-                                    <SelectItem value="completada">Tarjeta</SelectItem>
+                                    <SelectItem value="tarjeta">Tarjeta</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -346,14 +390,68 @@ export default function EditOrderForm({data}: EditOrderProps){
                                 )}
 
                         </div>
-                        <div className="mt-4 flex justify-end">
-                            <Label className="text-lg">
-                                Subtotal de la orden:{" "}
-                                <span className="font-bold">
-                                ${selectedProducts.reduce((sum, item) => sum + item.quantity * item.priceAtSale, 0).toFixed(2)}
-                                </span>
-                            </Label>
+                        <div className="mt-4 flex justify-between gap-10">
+                            
+                        <div className="flex justify-end">
+                            <Label className="text-lg">Pago Recibido:</Label>
+                            <Input
+                            type="number"
+                            value={cashReceived}
+                            onChange={(e) => setCashReceived(e.target.value)}
+                            name={fields.pay_received.name}
+                            id={fields.pay_received.id}
+                            />
+                        </div>
+                            <div className="flex justify-end">
+                                <Button type="button"
+                                onClick={handlePayment}>
+                                    Pagar / Abonar
+                                </Button>
                             </div>
+                            {paymentMethod === "efectivo" && (
+                                <div className="flex justify-end">
+                                    <Label className="text-lg">Cambio:</Label>
+                                    <span className="font-bold ml-2">
+                                    ${changeAmount.toFixed(2)}
+                                    </span>
+
+                                    <input
+                                    type="hidden"
+                                    value={changeAmount}
+                                    name={fields.change.name}
+                                    id={fields.change.id}
+                                    />
+                                </div>
+                                )}
+                            <div className="flex justify-end">
+                                <Label className="text-lg">Deuda pendiente:</Label>
+                                <span className="font-bold ml-2">
+                                    ${remainingDebt.toFixed(2)}
+                                </span>
+                                <input type="hidden" value={remainingDebt.toFixed(2)}
+                                name="remainingDebt" id="remainingDebt"/>
+                            </div>
+                            <div className="flex justify-end">
+                            <Label className="text-lg">Deuda pagada:</Label>
+                            <span className="font-bold ml-2">
+                                ${paidDebt.toFixed(2)}
+                            </span>
+                            <input
+                                type="hidden"
+                                value={paidDebt.toFixed(2)}
+                                name="payDebt"
+                                id="payDebt"
+                            />
+                            </div>
+                            <div className="flex justify-end">
+                                <Label className="text-lg">
+                                    Subtotal de la orden:{" "}
+                                    <span className="font-bold">
+                                    ${selectedProducts.reduce((sum, item) => sum + item.quantity * item.priceAtSale, 0).toFixed(2)}
+                                    </span>
+                                </Label>
+                            </div>
+                        </div>
                             <input type="hidden" name="id" value={data.id}/>
                     </div>
                 </CardContent>

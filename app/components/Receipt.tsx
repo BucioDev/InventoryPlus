@@ -19,6 +19,10 @@ type Order = {
   status?: string | null;
   sellDate?: string | Date;
   total: number;
+  debt?: number | null;
+  pay_debt?: number | null;
+  last_payment?: number | null;
+  change?: number | null;
   items: OrderItem[];
   user: User;
 };
@@ -72,7 +76,29 @@ const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ order, username }, r
 
       <hr className="my-2" />
       <p className="text-right font-bold text-lg">Total: ${total.toFixed(2)}</p>
-    </div>
+      <hr className="my-2" />
+
+      <div className="text-sm">
+        {order.last_payment !== null && order.last_payment !== undefined && (
+          <p>Último pago: ${order.last_payment.toFixed(2)}</p>
+        )}
+
+        {order.paymentmethod === "efectivo" && order.change !== undefined && (
+          <p>Cambio: ${(order.change ?? 0).toFixed(2)}</p>
+        )}
+
+        {order.pay_debt !== null && order.pay_debt !== undefined && (
+          <p>Total pagado: ${order.pay_debt.toFixed(2)}</p>
+        )}
+
+        {order.debt !== null && order.debt !== undefined && (
+          <p className="font-bold">
+            Deuda restante: ${order.debt.toFixed(2)}
+          </p>
+        )}
+      </div>
+      <div style={{ height: "60px" }} />
+    </div >
   );
 });
 
