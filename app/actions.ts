@@ -992,7 +992,10 @@ export async function editOrder(prevState: any, formData: FormData) {
     const id = formData.get("id") as string;
   
     const submission = parseWithZod(formData, { schema: orderSchema });
-    if (submission.status !== "success") return submission;
+    if (submission.status !== "success") {
+        console.log(submission.error);
+        return submission;
+    }
   
     const { nickname, status, items, paymentmethod, location, userId } = submission.value;
   
@@ -1012,7 +1015,8 @@ export async function editOrder(prevState: any, formData: FormData) {
     if (!existingOrder) {
       throw new Error("Order not found");
     }
-  
+
+
     const total = items.reduce(
       (sum, item) => sum + item.quantity * item.priceAtSale,
       0

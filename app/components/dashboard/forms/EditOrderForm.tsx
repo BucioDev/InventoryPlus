@@ -274,28 +274,39 @@ export default function EditOrderForm({data}: EditOrderProps){
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="flex flex-col gap-3">
-                            <Label>Sucursal</Label>
-                         <Select
-                            key={fields.location.key}
-                            name={fields.location.name}
-                            defaultValue={data.location?.trim() ?? ""}
-                            disabled={sessionInfo?.role === "vendor"}
-                            >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Selecciona una Sucursal" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {sucursales.map((sucursal) => (
-                                    
-                                <SelectItem key={sucursal.id} value={sucursal.name.trim()}>
-                                    {sucursal.name}
-                                </SelectItem>
-                                ))}
-                            </SelectContent>
-                            </Select>
+                        <div 
+                                className="flex flex-col gap-3"
+                                >
+                                <Label>Sucursal</Label>
+                                <Select
+                                    value={location ?? ""}
+                                    onValueChange={(value) => {
+                                        // Guard against Radix empty emission
+                                        if (value) setLocation(value);
+                                    }}
+                                    disabled={sessionInfo?.role === "vendor"}
+                                    >
+                                    <SelectTrigger>
+                                        <SelectValue>
+                                        {location || "Selecciona una Sucursal"}
+                                        </SelectValue>
+                                    </SelectTrigger>
 
-                        </div>
+                                    <SelectContent>
+                                        {sucursales.map((sucursal) => (
+                                        <SelectItem key={sucursal.id} value={sucursal.name}>
+                                            {sucursal.name}
+                                        </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                    </Select>
+                                    <input
+                                        type="hidden"
+                                        name={fields.location.name}
+                                        value={location}
+                                    />
+                                    <p className="text-red-500">{fields.location.errors}</p>
+                                </div>
                         <div className="flex flex-col gap-3">
                             <Label> Metodo de pago </Label>
                             <Select name={fields.paymentmethod.name} key={fields.paymentmethod.key} defaultValue={data.paymentmethod ?? ""} 
