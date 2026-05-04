@@ -6,6 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 
 async function getGastos(){
@@ -24,6 +25,9 @@ async function getGastos(){
 export default async function gastosPage(){
     const data = await getGastos();
     const session = await isLoggedIn();
+    if (session.role == "vendor"){
+        redirect("/ordenes");
+    }
     return(
         <>
         {session.role === "admin" ? (

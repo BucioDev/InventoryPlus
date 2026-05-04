@@ -1,8 +1,6 @@
 "use client"
 import AddStockForm from "@/app/components/dashboard/forms/AddStockForm";
 import TransfertockForm from "@/app/components/dashboard/forms/TransferStockForm";
-import { ToastHandler } from "@/app/components/ToastHandler";
-import prisma from "@/app/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";

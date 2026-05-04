@@ -5,11 +5,15 @@ import { RecentOrders } from "../components/dashboard/RecentOrders";
 import SalesChart from "../components/dashboard/SalesChart";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 
 export default async function Dashboard() {
     const session = await isLoggedIn();
-
+    
+    if (session.role == "vendor"){
+        redirect("/ordenes");
+    }
 
     return (
         <>

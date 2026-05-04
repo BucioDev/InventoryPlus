@@ -1,3 +1,4 @@
+import { isLoggedIn } from "@/app/actions";
 import prisma from "@/app/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,6 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +23,11 @@ async function getSucursales(){
 export default async function SucursalesPage() {
 
     const sucursales = await getSucursales();
+    const session = await isLoggedIn();
+    
+    if (session.role == "vendor"){
+        redirect("/ordenes");
+    }
     return(
         <>
         <div className="flex items-center justify-end mt-5">

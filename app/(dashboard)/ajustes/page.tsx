@@ -1,13 +1,16 @@
 "use client";
-import BarcodeScanner from "@/app/components/BarcodeScanner";
+import { isLoggedIn } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { useState } from "react";
+import { redirect } from "next/navigation";
 
-export default function AjustesPage() {
-    const [barcode, setBarcode] = useState("");
+export default async function AjustesPage() {
+    const session = await isLoggedIn();
+    
+    if (session.role == "vendor"){
+        redirect("/ordenes");
+    }
     return(
         <div>
             <Card className="mt-5">

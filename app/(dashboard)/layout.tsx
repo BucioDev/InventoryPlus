@@ -1,14 +1,15 @@
-"use client"
+
 import React, { ReactNode, Suspense } from "react"
-import Navbar from "../components/dashboard/Navbar"
 import { Toaster } from "@/components/ui/sonner";
 import { ToastHandler } from "../components/ToastHandler";
+import Navbar from "../components/dashboard/Navbar";
+import NavbarClient from "../components/dashboard/NavBarClient";
 
 export default function DashboardLayout({children}:{children:ReactNode}){
 
     return(
         <>
-        <Navbar />
+        <NavbarClient />
         <Toaster richColors  position="top-center" />
         <Suspense>
         <ToastHandler />

@@ -7,6 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {  MoreHorizontal, PlusCircle } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,10 @@ export default async function UsersPage() {
 
     const data = await getUsers();
     const session = await getSesion();
+    
+    if (session.role == "vendor"){
+        redirect("/ordenes");
+    }
 
     return (
         <>
