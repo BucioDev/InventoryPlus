@@ -28,16 +28,21 @@ const links = [
     },
     {
         id:4,
+        name:"Clientes",
+        href: "/clientes",
+    },
+    {
+        id:5,
         name:"Proveedores",
         href: "/proveedores",
     },
     {
-        id:5,
+        id:6,
         name:"Sucursales",
         href: "/sucursales",
     },
     {
-        id:6,
+        id:7,
         name:"Ajustes",
         href: "/ajustes",
     }

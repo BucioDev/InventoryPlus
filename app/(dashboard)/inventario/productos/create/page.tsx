@@ -2,6 +2,7 @@
 import { createProduct } from "@/app/actions";
 import BarcodeScanner from "@/app/components/BarcodeScanner";
 import { SubmitButton } from "@/app/components/SubmitButtons";
+import { TagListInput } from "@/app/components/TagListInput";
 import { TagInput } from "@/app/components/TagsInput";
 import { UploadDropzone } from "@/app/lib/uploadthing";
 import { productSchema } from "@/app/lib/zodSchemas";
@@ -133,7 +134,7 @@ export default function CreateProductPage() {
                         </div>
                         <div className="flex flex-col gap-3"> 
                             <Label>Compatibilidad del prodcuto</Label> {/* TODO: Crear un TagInput para poder agregar mas de una compatibilidad */}
-                            <TagInput
+                            <TagListInput
                                 name={fields.compatibility.name}
                                 defaultValue={fields.compatibility.initialValue as string[]}
                                 key={fields.compatibility.key}

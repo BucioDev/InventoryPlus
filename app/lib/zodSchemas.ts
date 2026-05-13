@@ -81,3 +81,10 @@ export const gastosSchema = z.object({
     name: z.string("Agregar nombre o razon del gasto"),
     amount: z.number("Requerido"),
 })
+
+export const clientesSchema = z.object({
+    nombre: z.string("El nombre es requerido"),
+    codigo: z.string("Numero de telefono Requerido"),
+    descuento: z.number("recuerda agregar un descuento"),
+    razon: z.string().optional(),
+})

@@ -17,6 +17,7 @@ import BarcodeScanner from "../../BarcodeScanner";
 import { TagInput } from "../../TagsInput";
 import { SubmitButton } from "../../SubmitButtons";
 import { Textarea } from "@/components/ui/textarea";
+import { TagListInput } from "../../TagListInput";
 
 
 type Category = {
@@ -148,7 +149,7 @@ export default function EditProductForm({data}:EditProductFormProps) {
                         </div>
                         <div className="flex flex-col gap-3"> 
                             <Label>Compatibilidad del prodcuto</Label> 
-                            <TagInput
+                            <TagListInput
                                 name={fields.compatibility.name}
                                 defaultValue={data.compatibility as string[]}
                                 key={fields.compatibility.key}

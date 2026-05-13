@@ -19,6 +19,15 @@ async function GetOrder(id:string){
             location:true,
             debt:true,
             pay_debt:true,
+            descuento:true,
+            cliente:{
+                select:{
+                    id:true,
+                    nombre:true,
+                    descuento:true,
+                    codigo:true,
+                },
+            },
             items:{
                 select:{
                     quantity:true,

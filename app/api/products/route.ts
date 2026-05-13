@@ -10,7 +10,7 @@ export async function GET(req: Request) {
   const name = searchParams.get("name") || "";
 
   try {
-    // 1️⃣ Fetch all products that match other filters first
+    // Fetch all products that match other filters first
     const products = await prisma.product.findMany({
       select: {
         id: true,
@@ -42,7 +42,7 @@ export async function GET(req: Request) {
       },
     });
 
-    // 2️⃣ Apply case-insensitive filtering for compatibility manually
+    //  Apply case-insensitive filtering for compatibility manually
     let filteredProducts = products;
     if (compatibility.length > 0) {
       const loweredFilters = compatibility.map((c) => c.toLowerCase());
@@ -54,7 +54,7 @@ export async function GET(req: Request) {
       );
     }
 
-    // 3️⃣ Return the filtered results
+    // Return the filtered results
     return NextResponse.json(filteredProducts);
   } catch (err) {
     console.error("Error fetching products:", err);

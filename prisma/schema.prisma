@@ -96,10 +96,23 @@ model Proveedores {
 
 }
 
+model Clientes {
+  id     String @id @default(uuid())
+  nombre String
+  codigo String @unique
+  descuento Int
+  Razon  String?
+  orders Order[]
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model Order{
   id        String @id @default(uuid())
   nickname  String
   total     Float
+  realTotal Float?
   orderPrice Float
   paymentmethod String?
   location String?
@@ -108,6 +121,9 @@ model Order{
   change  Float?
   pay_received Float?
   last_payment Float?
+  descuento Float?
+  clienteID String?
+  cliente Clientes? @relation(fields: [clienteID], references: [id])
   userID String
   user User @relation(fields: [userID], references: [id])
   items      OrderItem[]

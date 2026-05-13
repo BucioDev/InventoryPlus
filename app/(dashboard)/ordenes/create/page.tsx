@@ -1,6 +1,7 @@
 "use client"
 import { createOrder } from "@/app/actions";
 import { SubmitButton } from "@/app/components/SubmitButtons";
+import { BRAND_OPTIONS } from "@/app/constants/brand-options";
 import { orderSchema } from "@/app/lib/zodSchemas";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,14 +44,21 @@ type Category = {
 
 
 interface SessionInfo {
-  location: string | null;
-  role: string | null;
-  userId: string | null;
+    location: string | null;
+    role: string | null;
+    userId: string | null;
 }
 type Sucursal = {
     id: string;
     name: string;
-  };
+};
+
+
+type Cliente = {
+    id: string;
+    nombre: string;
+    descuento: Number;
+}
 
 
 export default function CreateOrderPage(){
@@ -65,6 +73,7 @@ export default function CreateOrderPage(){
         const [location, setLocation] = useState("");
         const [userId, setUserId] = useState("");
         const [compatibility, setCompatibility] = useState<string[]>([]);
+        const [selectedCompatibility, setSelectedCompatibility] = useState("");
         const [products, setProducts] = useState<any[]>([]);
         const [categories, setCategories] = useState<Category[]>([]);
         const [paymentMethod, setPaymentMethod] = useState<string>("");
@@ -74,6 +83,10 @@ export default function CreateOrderPage(){
         const [remainingDebt, setRemainingDebt] = useState(0);
         const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null);
         const [sucursales, setSucursales] = useState<Sucursal[]>([]);
+        const [codigo, setCodigo] = useState("");
+        const [descuento, setDescuento] = useState(0);
+        const [nickname, setNickname] = useState("PUBLICO GENERAL");
+        const [cliente, setCliente] = useState("");
 
         const [lastResult, action] = useActionState(createOrder, undefined);
 
@@ -90,6 +103,7 @@ export default function CreateOrderPage(){
         const debouncedBarcode = useDebounce(barcode, 500);   // waits .5s after typing
         const debounceName = useDebounce(name, 500);
         const debouncedLocation = useDebounce(location, 500); 
+        const debounceCliente = useDebounce(codigo, 500);
             //role and location
             useEffect(() => {
                 const fetchSession = async () => {
@@ -141,26 +155,57 @@ export default function CreateOrderPage(){
             fetchProducts();
         }, [debouncedBarcode, debounceName, debouncedLocation, compatibility]);
 
+        // Fetch Client 
+        useEffect(() => {
+            const fetchCliente = async () => {
+                const params = new URLSearchParams();
+                if (debounceCliente) params.append("phone", debounceCliente);
+                const res = await fetch(`/api/clientebyphone?${params.toString()}`);
+                const data: Cliente | null = await res.json();
+                if (data) {
+                    setNickname(data.nombre);
+                    setDescuento(Number(data.descuento));
+                    setCliente(data.id)
+                  } else {
+                    setNickname("PUBLICO GENERAL");
+                    setDescuento(0);
+                    setCliente("");
+                  }
+              };
+              fetchCliente();
+            }, [debounceCliente]);
+
 
     
         // Add compatibility tag on Enter
-        function handleCompatibilityAdd(e: React.KeyboardEvent<HTMLInputElement>) {
-            if (e.key === "Enter") {
-                e.preventDefault();
-                const value = (e.target as HTMLInputElement).value.trim();
-                if (value && !compatibility.includes(value)) {
-                    setCompatibility(prev => [...prev, value]);
-                }
-                (e.target as HTMLInputElement).value = "";
+        const handleCompatibilityAdd = () => {
+            if (
+              selectedCompatibility &&
+              !compatibility.includes(selectedCompatibility)
+            ) {
+              setCompatibility([
+                ...compatibility,
+                selectedCompatibility,
+              ]);
+          
+              setSelectedCompatibility("");
             }
-        }
+          };
 
+
+        function calculateDiscountedSubtotal() {
+            return selectedProducts.reduce((sum, item) => {
+              const originalPrice = item.priceAtSale;
+          
+              const discountedPrice =
+                originalPrice - (originalPrice * descuento) / 100;
+          
+              return sum + item.quantity * discountedPrice;
+            }, 0);
+          }
 
         function handlePayment() {
-            const currentSubtotal = selectedProducts.reduce(
-              (sum, item) => sum + item.quantity * item.priceAtSale,
-              0
-            );
+            const currentSubtotal = calculateDiscountedSubtotal();
             const received = parseFloat(cashReceived) || 0;
             let change = 0;
             let debt = 0;
@@ -206,10 +251,18 @@ export default function CreateOrderPage(){
                         <input type="hidden" value={userId} name={fields.userId.name} id={fields.userId.id}/>
                         <div className="flex flex-col gap-3">
                             <Label>Nombre o Apodo del cliente </Label>
-                            <Input  type="text"
+                            <Input  type="text" value={nickname}
                             name={fields.nickname.name}
-                            id={fields.nickname.id}/>
+                            id={fields.nickname.id}
+                            onChange={(e) => setNickname(e.target.value)}/>
                             <p className="text-red-500">{fields.nickname.errors}</p>
+                        </div>
+                        <div className="flex flex-col gap-3">
+                            <Label>Numero de Telefono Del cliente / Codigo </Label>
+                            <Input  type="text" value={codigo}
+                            onChange={(e) => setCodigo(e.target.value)}/>
+                            <p className="text-red-500"></p>
+                            <input type="hidden" value={cliente} id="clientID" name="clientID"/>
                         </div>
                         <div className="flex flex-col gap-3">
                             <Label> Estado de la orden </Label>
@@ -390,6 +443,14 @@ export default function CreateOrderPage(){
                                 </div>
                                 )}
                             <div className="flex justify-end">
+                                <Label className="text-lg">Descuento:</Label>
+                                <span className="font-bold ml-2">
+                                    %{descuento}
+                                </span>
+                                <input type="hidden" value={descuento}
+                                name="descuento" id="descuento"/>
+                            </div>
+                            <div className="flex justify-end">
                                 <Label className="text-lg">Deuda pendiente:</Label>
                                 <span className="font-bold ml-2">
                                     ${remainingDebt.toFixed(2)}
@@ -402,6 +463,14 @@ export default function CreateOrderPage(){
                                     Subtotal de la orden:{" "}
                                     <span className="font-bold">
                                     ${selectedProducts.reduce((sum, item) => sum + item.quantity * item.priceAtSale, 0).toFixed(2)}
+                                    </span>
+                                </Label>
+                            </div>
+                            <div className="flex justify-end">
+                                <Label className="text-lg">
+                                    total de la orden:{" "}
+                                    <span className="font-bold">
+                                    ${calculateDiscountedSubtotal().toFixed(2)}
                                     </span>
                                 </Label>
                             </div>
@@ -437,10 +506,37 @@ export default function CreateOrderPage(){
                             disabled={sessionInfo?.role === "vendor"}
                         />
 
-                        <Input
-                            placeholder="Escribe compatibilidad y presionar ENTER"
-                            onKeyDown={handleCompatibilityAdd}
-                        />
+                        <select
+                        value=""
+                        onChange={(e) => {
+                            const value = e.target.value;
+
+                            if (
+                            value &&
+                            !compatibility.includes(value)
+                            ) {
+                            setCompatibility([
+                                ...compatibility,
+                                value,
+                            ]);
+                            }
+                        }}
+                        className="border rounded px-2 py-1"
+                        >
+                        <option value="">
+                            Selecciona una compatibilidad
+                        </option>
+
+                        {BRAND_OPTIONS.map((option) => (
+                            <option
+                            key={option}
+                            value={option}
+                            disabled={compatibility.includes(option)}
+                            >
+                            {option}
+                            </option>
+                        ))}
+                        </select>
                         </div>
                         <div className="flex gap-2 flex-wrap">
                             {compatibility.map(c => (

@@ -4,7 +4,7 @@ import { sessionOptions, SessionData, defaultSession } from "./lib";
 import { cookies } from "next/headers";
 import prisma from "./lib/prisma";
 import { parseWithZod } from "@conform-to/zod/v4";
-import { categorySchema, gastosSchema, loginSchema, orderSchema, productSchema, proveedoresSchema, sucursalSchema, userSchema, userSchemaWithoutPass } from "./lib/zodSchemas";
+import { categorySchema, clientesSchema, gastosSchema, loginSchema, orderSchema, productSchema, proveedoresSchema, sucursalSchema, userSchema, userSchemaWithoutPass } from "./lib/zodSchemas";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { SubmissionResult } from "@conform-to/react";
@@ -801,7 +801,7 @@ export async function DeleteGasto(formData:FormData){
 
 //------------------------------------Order Actions - esta seccion tiene comentarios ya que cada acciones hace multiples mas acciones -------------------------------------
 
-export async function createOrder(prevState: unknown, formData: FormData): Promise<SubmissionResult | void> {
+export async function createOrder(prevState: unknown, formData: FormData){
 
     const session = await getSesion();
   
@@ -831,6 +831,8 @@ export async function createOrder(prevState: unknown, formData: FormData): Promi
     const remainingDebt = getNumber(formData.get("remainingDebt"));
     const payReceived = getNumber(formData.get("pay_received"));
     const change = getNumber(formData.get("change"));
+    const clienteID = formData.get("clientID") as string;
+    const descuento = Number(formData.get("descuento")) || 0;
   
     // =====================================================
     //  CALCULATIONS
@@ -840,6 +842,7 @@ export async function createOrder(prevState: unknown, formData: FormData): Promi
       (sum, item) => sum + item.quantity * item.priceAtSale,
       0
     );
+    const realtotal = total * (1 - descuento / 100);
   
     const productIds = items.map((item) => item.productId);
   
@@ -906,10 +909,12 @@ export async function createOrder(prevState: unknown, formData: FormData): Promi
         pay_received: payReceived,
         last_payment: payReceived,
         change: change,
-  
+        descuento:descuento,
+        clienteID:clienteID,
         userID: userId,
   
         total,
+        realTotal:realtotal,
         orderPrice,
   
         ...(status === "completada" && { sellDate: new Date() }),
@@ -1005,6 +1010,8 @@ export async function editOrder(prevState: any, formData: FormData) {
     const payDebt = getNumber(formData.get("payDebt"));
     const payReceived = getNumber(formData.get("pay_received"));
     const change = getNumber(formData.get("change"));
+    const clienteID = formData.get("clientID") as string;
+    const descuento = Number(formData.get("descuento")) || 0;
   
     // Get existing order (IMPORTANT)
     const existingOrder = await prisma.order.findUnique({
@@ -1021,6 +1028,7 @@ export async function editOrder(prevState: any, formData: FormData) {
       (sum, item) => sum + item.quantity * item.priceAtSale,
       0
     );
+    const realtotal = total * (1 - descuento / 100);
   
     const productIds = items.map((item) => item.productId);
   
@@ -1095,8 +1103,11 @@ export async function editOrder(prevState: any, formData: FormData) {
         pay_debt: payDebt,
         last_payment: payReceived,
         change: change,
+        descuento:descuento,
+        clienteID:clienteID,
         userID: userId,
         total,
+        realTotal:realtotal,
         orderPrice,
         ...(status === "completada" && { sellDate: new Date() }),
   
@@ -1223,6 +1234,7 @@ export async function getOrderData(orderId: string) {
       id: true,
       nickname: true,
       total: true,
+      realTotal:true,
       status: true,
       paymentmethod: true,
       location: true,
@@ -1230,6 +1242,13 @@ export async function getOrderData(orderId: string) {
       pay_debt:true,
       last_payment:true,
       change:true,
+      descuento:true,
+      cliente:{
+        select:{
+            nombre:true,
+            codigo:true,
+        },
+      },
       userID: true,
       sellDate: true,
       user: {
@@ -1277,7 +1296,114 @@ export async function MarkAsRead(formData:FormData){
     })
 }
 
+//---------------------------------------- Notifications Actiions ------------------------------------------
 
+export async function createClient(prevState: any, formData: FormData) {
+    const session = await getSesion();
+
+    if (session.role !== "admin") {
+        redirect("/");
+    }
+
+    const submission = parseWithZod(formData, {
+        schema: clientesSchema
+    });
+
+    if (submission.status !== "success") {
+        return submission.reply();
+    }
+
+    // Check if phone/code already exists
+    const existingClient = await prisma.clientes.findFirst({
+        where: {
+            codigo: submission.value.codigo,
+            isDeleted:false,
+
+        }
+    });
+
+    if (existingClient) {
+        return submission.reply({
+            fieldErrors: {
+                codigo: ["Este número ya está registrado."]
+            }
+        });
+    }
+
+    const cliente = await prisma.clientes.create({
+        data: {
+            nombre: submission.value.nombre,
+            codigo: submission.value.codigo,
+            descuento: submission.value.descuento,
+            Razon: submission.value.razon || "",
+        }
+    });
+
+    await createLog(
+        session.userId as string,
+        `Agrego al cliente ${cliente.nombre}`
+    );
+
+    redirect("/clientes?action=created&entity=cliente");
+}
+
+export async function editClient(prevState: unknown, formData: FormData){
+
+    const session = await getSesion();
+
+    if (session.role !== "admin") {
+    redirect("/");
+    }
+
+    const submission = parseWithZod(formData,{
+        schema:clientesSchema
+    });
+
+    if(submission.status !== "success"){
+        return submission.reply();
+    }
+
+    const id = formData.get("id") as string;
+
+    const cliente = await prisma.clientes.update({
+        where:{
+            id:id
+        },
+        data:{
+            nombre:submission.value.nombre,
+            codigo:submission.value.codigo,
+            descuento:submission.value.descuento,
+            Razon:submission.value.razon || "",
+        }
+    });
+
+    await createLog(session.userId as string, `Actualizo al cliente ${cliente.nombre}`);
+
+    redirect("/clientes?action=updated&entity=cliente");
+}
+
+export async function Deleteclient(formData:FormData){
+
+    const session = await getSesion();
+
+    if (session.role !== "admin") {
+    redirect("/");
+    }
+
+    const id = formData.get("id") as string;
+
+    await prisma.clientes.update({
+        where:{
+            id:id,
+        },
+        data:{
+            isDeleted:true,
+        }
+    })
+    await createLog(session.userId as string, `Elimino un cliente `);
+
+    redirect("/clientes?action=deleted&entity=cliente");
+}
 
 // --------------Helper funtions-----------
 

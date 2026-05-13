@@ -1,6 +1,7 @@
 "use client"
 import { createOrder, editOrder } from "@/app/actions";
 import { SubmitButton } from "@/app/components/SubmitButtons";
+import { BRAND_OPTIONS } from "@/app/constants/brand-options";
 import { orderSchema } from "@/app/lib/zodSchemas";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -56,9 +57,18 @@ interface SessionInfo {
     location: string | null;
     debt: number | null;
     pay_debt: number | null;
+    descuento: number | null;
+    cliente: ClienteData | null;
     items: OrderItemData[];
   };
 }
+
+interface ClienteData {
+    id: string;
+    nombre: string;
+    descuento: number;
+    codigo: string;
+  }
 
     interface OrderItemData {
     productId: string;
@@ -75,6 +85,11 @@ interface SessionInfo {
     name: string;
   };
 
+  type Cliente = {
+    id: string;
+    nombre: string;
+    descuento: Number;
+}
     
 export default function EditOrderForm({data}: EditOrderProps){
 
@@ -85,24 +100,24 @@ export default function EditOrderForm({data}: EditOrderProps){
 
 
     const [barcode, setBarcode] = useState("");
-        const [location, setLocation] = useState("");
+        const [location, setLocation] = useState(data.location || "");
         const [userId, setUserId] = useState("");
         const [name, setName] = useState("");
         const [compatibility, setCompatibility] = useState<string[]>([]);
         const [products, setProducts] = useState<any[]>([]);
         const [categories, setCategories] = useState<Category[]>([]);
+        const [subtotal, setSubtotal] = useState(0);
 
-        const [paymentMethod, setPaymentMethod] = useState<string>(
-            data.paymentmethod ?? ""
-        );
+        const [paymentMethod, setPaymentMethod] = useState<string>(data.paymentmethod ?? "");
         const [changeAmount, setChangeAmount] = useState(0);
         const [cashReceived, setCashReceived] = useState<string>("");
-        const [remainingDebt, setRemainingDebt] = useState(
-            data.debt ?? data.total ?? 0
-        );
-        const [paidDebt, setPaidDebt] = useState(
-            data.pay_debt ?? 0
-        );
+        const [remainingDebt, setRemainingDebt] = useState(data.debt ?? data.total ?? 0);
+        const [paidDebt, setPaidDebt] = useState(data.pay_debt ?? 0);
+
+        const [nickname, setNickname] = useState(data.cliente?.nombre || data.nickname || "PUBLICO GENERAL");
+        const [descuento, setDescuento] = useState(data.cliente?.descuento || data.descuento || 0);
+        const [cliente, setCliente] = useState(data.cliente?.id || "");
+        const [codigo, setCodigo] = useState(data.cliente?.codigo || "");
 
         const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null);
         const [sucursales, setSucursales] = useState<Sucursal[]>([]);
@@ -123,6 +138,7 @@ export default function EditOrderForm({data}: EditOrderProps){
         const debouncedBarcode = useDebounce(barcode, 500);   // waits .5s after typing
         const debounceName = useDebounce(name, 500);
         const debouncedLocation = useDebounce(location, 500); 
+        const debounceCliente = useDebounce(codigo, 500);
             //role and location
          useEffect(() => {
                          const fetchSession = async () => {
@@ -189,6 +205,26 @@ export default function EditOrderForm({data}: EditOrderProps){
         }
         }, [data.items]);
 
+        // Fetch Client 
+        useEffect(() => {
+            const fetchCliente = async () => {
+                const params = new URLSearchParams();
+                if (debounceCliente) params.append("phone", debounceCliente);
+                const res = await fetch(`/api/clientebyphone?${params.toString()}`);
+                const data: Cliente | null = await res.json();
+                if (data) {
+                    setNickname(data.nombre);
+                    setDescuento(Number(data.descuento));
+                    setCliente(data.id)
+                  } else {
+                    setNickname("PUBLICO GENERAL");
+                    setDescuento(0);
+                    setCliente("");
+                  }
+              };
+              fetchCliente();
+            }, [debounceCliente]);
+
     
         // Add compatibility tag on Enter
         function handleCompatibilityAdd(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -203,33 +239,38 @@ export default function EditOrderForm({data}: EditOrderProps){
         }
 
 
-        
+        function calculateDiscountedSubtotal() {
+            return selectedProducts.reduce((sum, item) => {
+              const originalPrice = item.priceAtSale;
           
-        function handlePayment() {
-            const received = parseFloat(cashReceived) || 0;
+              const discountedPrice =
+                originalPrice - (originalPrice * descuento) / 100;
           
-            const previousDebt = data.debt ?? data.total ?? 0;
-            const previousPaid = data.pay_debt ?? 0;
-          
-            // ✅ THIS is the key change:
-            const actualPayment = Math.min(received, previousDebt);
-          
-            const newDebt = Math.max(previousDebt - actualPayment, 0);
-          
-            // ✅ allow overpayment tracking
-            const newTotalPaid = previousPaid + received;
-          
-            let change = 0;
-          
-            if (paymentMethod === "efectivo") {
-              change = Math.max(received - previousDebt, 0);
-            }
-          
-            setChangeAmount(change);
-            setRemainingDebt(newDebt);
-            setPaidDebt(newTotalPaid);
+              return sum + item.quantity * discountedPrice;
+            }, 0);
           }
 
+        function handlePayment() {
+            const currentSubtotal = calculateDiscountedSubtotal();
+            const received = parseFloat(cashReceived) || 0;
+            let change = 0;
+            let debt = 0;
+            let paid = received;
+
+            if (paymentMethod === "efectivo") {
+              change = Math.max(received - currentSubtotal, 0);
+              paid = Math.min(received, currentSubtotal);
+              debt = Math.max(currentSubtotal - paid, 0);
+            } else {
+              change = 0;
+              paid = Math.min(received, currentSubtotal);
+              debt = Math.max(currentSubtotal - paid, 0);
+            }
+          
+            setSubtotal(currentSubtotal);
+            setChangeAmount(change);
+            setRemainingDebt(debt);
+          }
 
     return(
         <div className="mt-5 flex flex-col gap-6">
@@ -258,7 +299,15 @@ export default function EditOrderForm({data}: EditOrderProps){
                             <Input  type="text"
                             name={fields.nickname.name}
                             id={fields.nickname.id}
-                            defaultValue={data.nickname}/>
+                            value={nickname}
+                            onChange={(e) => setNickname(e.target.value)}/>
+                        </div>
+                        <div className="flex flex-col gap-3">
+                            <Label>Numero de Telefono Del cliente / Codigo </Label>
+                            <Input  type="text" value={codigo}
+                            onChange={(e) => setCodigo(e.target.value)}/>
+                            <p className="text-red-500"></p>
+                            <input type="hidden" value={cliente} id="clientID" name="clientID"/>
                         </div>
                         <div className="flex flex-col gap-3">
                             <Label> Estado de la orden </Label>
@@ -435,6 +484,14 @@ export default function EditOrderForm({data}: EditOrderProps){
                                 </div>
                                 )}
                             <div className="flex justify-end">
+                                <Label className="text-lg">Descuento:</Label>
+                                <span className="font-bold ml-2">
+                                    %{descuento}
+                                </span>
+                                <input type="hidden" value={descuento}
+                                name="descuento" id="descuento"/>
+                            </div>
+                            <div className="flex justify-end">
                                 <Label className="text-lg">Deuda pendiente:</Label>
                                 <span className="font-bold ml-2">
                                     ${remainingDebt.toFixed(2)}
@@ -459,6 +516,14 @@ export default function EditOrderForm({data}: EditOrderProps){
                                     Subtotal de la orden:{" "}
                                     <span className="font-bold">
                                     ${selectedProducts.reduce((sum, item) => sum + item.quantity * item.priceAtSale, 0).toFixed(2)}
+                                    </span>
+                                </Label>
+                            </div>
+                            <div className="flex justify-end">
+                                <Label className="text-lg">
+                                    total de la orden:{" "}
+                                    <span className="font-bold">
+                                    ${calculateDiscountedSubtotal().toFixed(2)}
                                     </span>
                                 </Label>
                             </div>
@@ -495,10 +560,37 @@ export default function EditOrderForm({data}: EditOrderProps){
                             disabled={sessionInfo?.role === "vendor"}
                         />
 
-                        <Input
-                            placeholder="Escribe compatibilidad y presionar ENTER"
-                            onKeyDown={handleCompatibilityAdd}
-                        />
+                        <select
+                        value=""
+                        onChange={(e) => {
+                            const value = e.target.value;
+
+                            if (
+                            value &&
+                            !compatibility.includes(value)
+                            ) {
+                            setCompatibility([
+                                ...compatibility,
+                                value,
+                            ]);
+                            }
+                        }}
+                        className="border rounded px-2 py-1"
+                        >
+                        <option value="">
+                            Selecciona una compatibilidad
+                        </option>
+
+                        {BRAND_OPTIONS.map((option) => (
+                            <option
+                            key={option}
+                            value={option}
+                            disabled={compatibility.includes(option)}
+                            >
+                            {option}
+                            </option>
+                        ))}
+                        </select>
                         </div>
                         <div className="flex gap-2 flex-wrap">
                             {compatibility.map(c => (
