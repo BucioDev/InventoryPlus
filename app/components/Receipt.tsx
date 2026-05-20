@@ -79,14 +79,14 @@ const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
         <hr className="my-2" />
         <p>Order ID: {order.id}</p>
         <div className="flex flex-col items-center my-1">
-          <Barcode
-            value={order.id}
-            height={40}
-            width={1.5}
-            fontSize={12}
-            margin={0}
-            displayValue={false}
-          />
+        <Barcode
+          value={order.id}
+          height={30}
+          width={0.8}
+          fontSize={10}
+          margin={0}
+          displayValue={false}
+        />
         </div>
 
         {order.user.firstName && (
