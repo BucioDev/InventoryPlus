@@ -83,7 +83,7 @@ export default function CreateOrderPage(){
         const [remainingDebt, setRemainingDebt] = useState(0);
         const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null);
         const [sucursales, setSucursales] = useState<Sucursal[]>([]);
-        const [codigo, setCodigo] = useState("");
+        const [codigo, setCodigo] = useState("2132");
         const [descuento, setDescuento] = useState(0);
         const [nickname, setNickname] = useState("PUBLICO GENERAL");
         const [cliente, setCliente] = useState("");
