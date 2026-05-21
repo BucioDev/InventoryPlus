@@ -1,4 +1,5 @@
 export const BRAND_OPTIONS = [
+  "UNIVERSAL",
   "BAJAJ",
   "BAJAJ Avenger Cruise 220",
   "BAJAJ Platina 100",
