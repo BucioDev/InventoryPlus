@@ -699,6 +699,7 @@ async function printInventarioReport(
                                   <tr>
                                     <th>Código</th>
                                     <th>Descripción</th>
+                                    <th>notas</th>
                                     <th>Stock</th>
                                   </tr>
                                 </thead>
@@ -714,6 +715,10 @@ async function printInventarioReport(
   
                                           <td>
                                             ${product.name}
+                                          </td>
+
+                                          <td>
+                                            ${product.notes || ""}
                                           </td>
   
                                           <td>
@@ -742,6 +747,7 @@ async function printInventarioReport(
                                   <tr>
                                     <th>Código</th>
                                     <th>Descripción</th>
+                                    <th>notas</th>
                                     <th>Stock</th>
                                     <th>Stock mínimo</th>
                                   </tr>
@@ -758,6 +764,10 @@ async function printInventarioReport(
   
                                           <td>
                                             ${product.name}
+                                          </td>
+
+                                          <td>
+                                            ${product.notes || ""}
                                           </td>
   
                                           <td>

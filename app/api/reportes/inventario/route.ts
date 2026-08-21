@@ -33,6 +33,7 @@ export async function GET(req: Request) {
         name: true,
         stock: true,
         alertammount: true,
+        notes:true,
         location: true,
       },
       orderBy: [
