@@ -9,7 +9,6 @@ import { CalendarIcon, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
-import { string } from "zod";
 function formatDate(date: Date | undefined) {
     if (!date) return ""
   
@@ -56,6 +55,7 @@ function formatDate(date: Date | undefined) {
   
     const [selectedUser, setSelectedUser] = useState<string>("all");
     const [selectedLocation, setSelectedLocation] = useState<string>("all");
+    const [selectedLocation2, setSelectedLocation2] = useState<string>("all");
   
     useEffect(() => {
       const fetchSucursales = async () => {
@@ -80,10 +80,10 @@ function formatDate(date: Date | undefined) {
             <ChevronLeft />
           </Link>
         </Button>
-  
+        <div className="grid grid-cols-2 gap-4">
         <Card className="mt-5">
           <CardHeader>
-            <CardTitle>Reportes</CardTitle>
+            <CardTitle>Reportes de Ventas</CardTitle>
           </CardHeader>
   
           <CardContent>
@@ -255,6 +255,43 @@ function formatDate(date: Date | undefined) {
             </Button>
           </CardFooter>
         </Card>
+        <Card className="mt-5">
+              <CardHeader>
+                <CardTitle>Reportes de Inventario</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-6">
+
+                  <div className="flex flex-col gap-3">
+                    <Label>Seleccionar la susucursal</Label>
+                    <Label>Sucursal </Label>
+                    <Select onValueChange={setSelectedLocation2} defaultValue="all">
+                      <SelectTrigger>
+                        <SelectValue placeholder="Todas las sucursales" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas</SelectItem>
+                        {sucursales.map((sucursal) => (
+                          <SelectItem key={sucursal.id} value={sucursal.name}>
+                            {sucursal.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+
+              </CardContent>
+              <CardFooter>
+                <Button className="mt-6 w-full"
+                onClick={() =>{
+                  printInventarioReport(selectedLocation2)
+                }}>
+                  Generar reporte de faltas en stock</Button>
+              </CardFooter>
+        </Card>
+        </div>
       </>
     )
   }
@@ -471,5 +508,306 @@ async function printSalesReport(
     `);
   
     printWindow.document.close();
+    printWindow.print();
+  }
+
+
+async function printInventarioReport(
+    selectedLocation2 = "all"
+  ) {
+    const url = new URL(
+      "/api/reportes/inventario",
+      window.location.origin
+    );
+  
+    url.searchParams.set("location", selectedLocation2);
+  
+    const response = await fetch(url);
+  
+    if (!response.ok) {
+      console.error("Error al obtener el reporte de inventario");
+      return;
+    }
+  
+    const data = await response.json();
+  
+    const printWindow = window.open("", "_blank");
+  
+    if (!printWindow) return;
+  
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Reporte de Inventario</title>
+  
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              padding: 30px;
+              color: #111;
+              margin: 0;
+            }
+
+            h1 {
+              text-align: center;
+              margin-bottom: 5px;
+            }
+
+            .subtitle {
+              text-align: center;
+              color: #666;
+              margin-bottom: 30px;
+            }
+
+            .location {
+              margin-top: 30px;
+
+              /* IMPORTANT:
+                Allow the location to continue across pages */
+              page-break-inside: auto;
+              break-inside: auto;
+            }
+
+            .location-title {
+              font-size: 22px;
+              margin-bottom: 20px;
+              border-bottom: 2px solid #111;
+              padding-bottom: 8px;
+
+              /* Keep the title with the content below it */
+              page-break-after: avoid;
+              break-after: avoid;
+            }
+
+            h3 {
+              margin-top: 20px;
+              margin-bottom: 10px;
+
+              /* Don't leave a heading alone at the bottom */
+              page-break-after: avoid;
+              break-after: avoid;
+            }
+
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 10px;
+              margin-bottom: 25px;
+
+              /* IMPORTANT:
+                Allow tables to flow across pages */
+              page-break-inside: auto;
+              break-inside: auto;
+            }
+
+            /* Repeat table headers when a table continues
+              onto another page */
+            thead {
+              display: table-header-group;
+            }
+
+            /* Don't split individual rows */
+            tr {
+              page-break-inside: avoid;
+              break-inside: avoid;
+            }
+
+            th,
+            td {
+              border: 1px solid #ddd;
+              padding: 10px;
+              text-align: left;
+            }
+
+            th {
+              background: #f5f5f5;
+            }
+
+            .empty {
+              color: #777;
+              font-style: italic;
+              margin-bottom: 25px;
+            }
+
+            .date {
+              text-align: right;
+              color: #666;
+              font-size: 12px;
+              margin-bottom: 30px;
+            }
+
+            @media print {
+              body {
+                padding: 15px;
+              }
+
+              .location {
+                page-break-inside: auto;
+                break-inside: auto;
+              }
+
+              table {
+                page-break-inside: auto;
+                break-inside: auto;
+              }
+
+              tr {
+                page-break-inside: avoid;
+                break-inside: avoid;
+              }
+            }
+          </style>
+        </head>
+  
+        <body>
+  
+          <h1>Reporte de Inventario</h1>
+  
+          <div class="subtitle">
+            ${
+              selectedLocation2 === "all"
+                ? "Todas las sucursales"
+                : selectedLocation2
+            }
+          </div>
+  
+          <div class="date">
+            Generado: ${new Date().toLocaleString("es-MX")}
+          </div>
+  
+          ${
+            data.locations && data.locations.length > 0
+              ? data.locations
+                  .map(
+                    (location: any) => `
+                      <div class="location">
+  
+                        <div class="location-title">
+                          ${location.location}
+                        </div>
+  
+                        ${
+                          location.outOfStock &&
+                          location.outOfStock.length > 0
+                            ? `
+                              <h3>
+                                Productos agotados
+                              </h3>
+  
+                              <table>
+                                <thead>
+                                  <tr>
+                                    <th>Código</th>
+                                    <th>Descripción</th>
+                                    <th>Stock</th>
+                                  </tr>
+                                </thead>
+  
+                                <tbody>
+                                  ${location.outOfStock
+                                    .map(
+                                      (product: any) => `
+                                        <tr>
+                                          <td>
+                                            ${product.barcode}
+                                          </td>
+  
+                                          <td>
+                                            ${product.name}
+                                          </td>
+  
+                                          <td>
+                                            ${product.stock}
+                                          </td>
+                                        </tr>
+                                      `
+                                    )
+                                    .join("")}
+                                </tbody>
+                              </table>
+                            `
+                            : ""
+                        }
+  
+                        ${
+                          location.lowStock &&
+                          location.lowStock.length > 0
+                            ? `
+                              <h3>
+                                Productos con stock bajo
+                              </h3>
+  
+                              <table>
+                                <thead>
+                                  <tr>
+                                    <th>Código</th>
+                                    <th>Descripción</th>
+                                    <th>Stock</th>
+                                    <th>Stock mínimo</th>
+                                  </tr>
+                                </thead>
+  
+                                <tbody>
+                                  ${location.lowStock
+                                    .map(
+                                      (product: any) => `
+                                        <tr>
+                                          <td>
+                                            ${product.barcode}
+                                          </td>
+  
+                                          <td>
+                                            ${product.name}
+                                          </td>
+  
+                                          <td>
+                                            ${product.stock}
+                                          </td>
+  
+                                          <td>
+                                            ${product.alertammount}
+                                          </td>
+                                        </tr>
+                                      `
+                                    )
+                                    .join("")}
+                                </tbody>
+                              </table>
+                            `
+                            : ""
+                        }
+  
+                        ${
+                          (!location.outOfStock ||
+                            location.outOfStock.length === 0) &&
+                          (!location.lowStock ||
+                            location.lowStock.length === 0)
+                            ? `
+                              <p class="empty">
+                                No hay productos agotados o con stock bajo.
+                              </p>
+                            `
+                            : ""
+                        }
+  
+                      </div>
+                    `
+                  )
+                  .join("")
+              : `
+                <p class="empty">
+                  No se encontraron productos con stock agotado o bajo.
+                </p>
+              `
+          }
+  
+        </body>
+      </html>
+    `);
+  
+    printWindow.document.close();
+  
+    printWindow.focus();
+  
     printWindow.print();
   }
