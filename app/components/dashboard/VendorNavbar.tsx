@@ -10,6 +10,11 @@ const links = [
         name: "Ordenes",
         href: "/ordenes",
     },
+    {
+        id:1,
+        name: "Inventario",
+        href: "/inventario",
+    },
 ]
 
 export default function NavbarLinks({onLinkClick}:{onLinkClick?:() => void}) {
