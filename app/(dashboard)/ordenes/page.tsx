@@ -138,7 +138,7 @@ async function GetOrders(search?: string) {
                     >
                       <TableCell>{order.nickname}</TableCell>
                       <TableCell>{order.totalQuantity}</TableCell>
-                      <TableCell>{order.realTotal ?? order.total}</TableCell>
+                      <TableCell>{order.realTotal?.toFixed(2) ?? order.total.toFixed(2)}</TableCell>
                       <TableCell>{order.status}</TableCell>
                       <TableCell>{order.paymentmethod}</TableCell>
                       <TableCell>
