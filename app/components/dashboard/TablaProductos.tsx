@@ -10,6 +10,7 @@ import { ChevronRight, MoreHorizontal, PlusCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import ImageWithZoom from "../imageWithZoom";
 
 interface tabalProductosProps {
     role:string;
@@ -245,13 +246,7 @@ export default function TablaProductos({role, local}:tabalProductosProps) {
                   {paginatedProducts.map((product) => (
                     <TableRow key={product.id}>
                       <TableCell>
-                        <Image
-                          alt="Imagen del producto"
-                          src={product.images[0]}
-                          width={64}
-                          height={64}
-                          className="rounded-md object-cover h-16 w-16"
-                        />
+                        <ImageWithZoom image={product.images[0]}/>
                       </TableCell>
       
                       <TableCell className="max-w-[200px] whitespace-normal break-words">
