@@ -111,6 +111,7 @@ export default function CreateUserPage() {
                                     <SelectItem value="admin">Administrador</SelectItem>
                                     <SelectItem value="vendor">Vendedor</SelectItem>
                                     <SelectItem value="user">Usuario General</SelectItem>
+                                    <SelectItem value="supervisor">Supervisor</SelectItem>
                                 </SelectContent>
                             </Select>
                             <p className="text-red-500">{fields.role.errors}</p>

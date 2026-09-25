@@ -8,7 +8,7 @@ export default async function InventarioPage() {
 
   return(
     <div>
-      {role === "admin" || role === "vendor" ? (
+      {role === "admin" || role === "vendor" || role === "supervisor" ? (
         <>
         <TablaProductos role={role} local={session.location as string}/>
         </>

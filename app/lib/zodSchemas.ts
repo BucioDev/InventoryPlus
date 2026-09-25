@@ -7,7 +7,7 @@ export const userSchema = z.object({
     firstname: z.string().min(3,"Nombre es Requerido y debe ser mayor a 3 caracteres"),
     lastname: z.string().min(3).optional(),
     img: z.string().optional(),
-    role: z.enum(["admin","vendor","user"],"Debe asignar un rol"),
+    role: z.enum(["admin","vendor","user","supervisor"],"Debe asignar un rol"),
     location:z.string().optional(),
 })
 export const userSchemaWithoutPass = z.object({
@@ -15,7 +15,7 @@ export const userSchemaWithoutPass = z.object({
     firstname: z.string().min(3,"Nombre es Requerido y debe ser mayor a 3 caracteres"),
     lastname: z.string().min(3).optional(),
     img: z.string().optional(),
-    role: z.enum(["admin","vendor","user"],"Debe asignar un rol"),
+    role: z.enum(["admin","vendor","user","supervisor"],"Debe asignar un rol"),
     location:z.string().optional(),
 })
 

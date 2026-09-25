@@ -15,6 +15,10 @@ export default async function Dashboard() {
         redirect("/ordenes");
     }
 
+    if (session.role == "supervisor") {
+        redirect("/ordenes")
+    }
+
     return (
         <>
         <div className="flex justify-between items-center mt-5">

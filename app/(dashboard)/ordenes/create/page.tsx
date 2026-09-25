@@ -564,10 +564,6 @@ export default function CreateOrderPage(){
                             <TableHead>Ubicacion</TableHead>
                             <TableHead className="w-[200px]">Notas</TableHead>
                             <TableHead>Stock</TableHead>
-                            {sessionInfo?.role !== "vendor" && (
-                                <TableHead>Precio de compra</TableHead>
-                            )}
-                            
                             <TableHead>Precio de venta</TableHead>
                             <TableHead className="text-right">Acciones</TableHead>
                         </TableRow>
@@ -583,10 +579,6 @@ export default function CreateOrderPage(){
                                 <TableCell>{product.location}</TableCell>
                                 <TableCell className="max-w-[200px] whitespace-normal break-words">{product.notes}</TableCell>
                                 <TableCell>{product.stock}</TableCell>
-                                {sessionInfo?.role !== "vendor" && (
-                                    <TableCell>{product.buyprice}</TableCell>
-                                )}
-                                
                                 <TableCell>{product.sellprice}</TableCell>
                                 <TableCell className="text-right">
                                     <Button

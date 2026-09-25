@@ -230,7 +230,7 @@ export default function TablaProductos({role, local}:tabalProductosProps) {
                     <TableHead>Variante</TableHead>
                     <TableHead>Stock</TableHead>
       
-                    {role !== "vendor" && (
+                    {role !== "vendor" && role !== "supervisor" &&(
                       <TableHead>Precio de compra</TableHead>
                     )}
       
@@ -273,7 +273,7 @@ export default function TablaProductos({role, local}:tabalProductosProps) {
       
                       <TableCell>{product.stock}</TableCell>
       
-                      {role !== "vendor" && (
+                      {role !== "vendor" && role !== "supervisor" && (
                         <TableCell>{product.buyprice}</TableCell>
                       )}
       
@@ -294,12 +294,14 @@ export default function TablaProductos({role, local}:tabalProductosProps) {
                               </DropdownMenuLabel>
       
                               <DropdownMenuSeparator />
-      
-                              <DropdownMenuItem asChild>
+                              { role !== "supervisor" && (
+                                <DropdownMenuItem asChild>
                                 <Link href={`/inventario/productos/${product.id}`}>
                                   Editar
                                 </Link>
                               </DropdownMenuItem>
+                              )}
+                              
       
                               <DropdownMenuItem asChild>
                                 <Link href={`/inventario/productos/${product.id}/delete`}>

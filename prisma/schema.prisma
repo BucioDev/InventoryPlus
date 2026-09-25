@@ -176,4 +176,5 @@ enum Role {
   admin
   vendor
   user
+  supervisor
 }
