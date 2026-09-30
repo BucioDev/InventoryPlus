@@ -59,6 +59,7 @@ async function GetOrders(search?: string) {
         },
         items: {
           select: {
+            description:true,
             quantity: true,
             priceAtSale: true,
             product: {

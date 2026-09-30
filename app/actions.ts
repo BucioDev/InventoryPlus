@@ -9,6 +9,7 @@ import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { SubmissionResult } from "@conform-to/react";
 import { use } from "react";
+import { string } from "zod";
 
 
 const saltRounds = 12;
@@ -801,189 +802,237 @@ export async function DeleteGasto(formData:FormData){
 
 //------------------------------------Order Actions - esta seccion tiene comentarios ya que cada acciones hace multiples mas acciones -------------------------------------
 
-export async function createOrder(prevState: unknown, formData: FormData){
-
+export async function createOrder(prevState: unknown, formData: FormData) {
     const session = await getSesion();
-  
+
     if (!session) {
-      redirect("/");
+        redirect("/");
     }
-  
+
     const submission = parseWithZod(formData, { schema: orderSchema });
-  
+
     if (submission.status !== "success") {
-      return {
-        ...submission,
-        error: submission.error ?? undefined,
-      };
+        return {
+            ...submission,
+            error: submission.error ?? undefined,
+        };
     }
-  
+
     const {
-      nickname,
-      status,
-      items,
-      paymentmethod,
-      location,
-      userId,
+        nickname,
+        status,
+        items,
+        paymentmethod,
+        location,
+        userId,
     } = submission.value;
-  
-    
+
     const remainingDebt = getNumber(formData.get("remainingDebt"));
     const payReceived = getNumber(formData.get("pay_received"));
     const change = getNumber(formData.get("change"));
     const clienteID = formData.get("clientID") as string;
     const descuento = Number(formData.get("descuento")) || 0;
-  
+
     // =====================================================
-    //  CALCULATIONS
+    // CALCULATIONS
     // =====================================================
-  
+
     const total = items.reduce(
-      (sum, item) => sum + item.quantity * item.priceAtSale,
-      0
+        (sum, item) => sum + item.quantity * item.priceAtSale,
+        0
     );
+
     const realtotal = total * (1 - descuento / 100);
-  
-    const productIds = items.map((item) => item.productId);
-  
-    // Fetch ALL products 
+
+    // Only registered products have a productId
+    const productIds = items
+        .map((item) => item.productId)
+        .filter((id): id is string => id !== null);
+
+    // =====================================================
+    // FETCH REGISTERED PRODUCTS
+    // =====================================================
+
     const products = await prisma.product.findMany({
-      where: { id: { in: productIds } },
-      select: {
-        id: true,
-        buyprice: true,
-        stock: true,
-        name: true,
-        alertammount: true,
-      },
+        where: { id: { in: productIds } },
+        select: {
+            id: true,
+            buyprice: true,
+            stock: true,
+            name: true,
+            alertammount: true,
+        },
     });
-  
+
     // =====================================================
     // STOCK VALIDATION
     // =====================================================
-  
-    const stockErrors: string[] = [];
-  
-    for (const item of items) {
-      const product = products.find((p) => p.id === item.productId);
-  
-      if (!product) {
-        stockErrors.push(`Producto ${item.productId} no encontrado.`);
-        continue;
-      }
-  
-      if (item.quantity > product.stock) {
-        stockErrors.push(
-          `Cantidad (${item.quantity}) excede stock (${product.stock}) para ${product.name}`
-        );
-      }
-    }
-  
-    if (stockErrors.length > 0) {
-      redirect("/ordenes?error=Stock insuficiente en uno o más productos");
-    }
-  
-    // =====================================================
-    //  INTERNAL COST
-    // =====================================================
-  
-    const orderPrice = items.reduce((sum, item) => {
-      const product = products.find((p) => p.id === item.productId);
-      const buyPrice = product?.buyprice || 0;
-      return sum + item.quantity * buyPrice;
-    }, 0);
-  
-    // =====================================================
-    //  CREATE ORDER
-    // =====================================================
-  
-    const order = await prisma.order.create({
-      data: {
-        nickname,
-        status,
-        paymentmethod: paymentmethod || null,
-        location: location || null,
 
-        debt: remainingDebt,
-        pay_debt: payReceived,
-        pay_received: payReceived,
-        last_payment: payReceived,
-        change: change,
-        descuento:descuento,
-        clienteID:clienteID,
-        userID: userId,
-  
-        total,
-        realTotal:realtotal,
-        orderPrice,
-  
-        ...(status === "completada" && { sellDate: new Date() }),
-  
-        items: {
-          create: items.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            priceAtSale: item.priceAtSale,
-          })),
+    const stockErrors: string[] = [];
+
+    for (const item of items) {
+        // Custom product/service - no stock validation
+        if (!item.productId) {
+            continue;
+        }
+
+        const product = products.find(
+            (p) => p.id === item.productId
+        );
+
+        if (!product) {
+            stockErrors.push(
+                `Producto ${item.productId} no encontrado.`
+            );
+            continue;
+        }
+
+        if (item.quantity > product.stock) {
+            stockErrors.push(
+                `Cantidad (${item.quantity}) excede stock (${product.stock}) para ${product.name}`
+            );
+        }
+    }
+
+    if (stockErrors.length > 0) {
+        redirect("/ordenes?error=Stock insuficiente en uno o más productos");
+    }
+
+    // =====================================================
+    // INTERNAL COST
+    // =====================================================
+
+    const orderPrice = items.reduce((sum, item) => {
+        if (!item.productId) {
+            return sum;
+        }
+
+        const product = products.find(
+            (p) => p.id === item.productId
+        );
+
+        const buyPrice = product?.buyprice || 0;
+
+        return sum + item.quantity * buyPrice;
+    }, 0);
+
+    // =====================================================
+    // CREATE ORDER
+    // =====================================================
+
+    const order = await prisma.order.create({
+        data: {
+            nickname,
+            status,
+            paymentmethod: paymentmethod || null,
+            location: location || null,
+
+            debt: remainingDebt,
+            pay_debt: payReceived,
+            pay_received: payReceived,
+            last_payment: payReceived,
+            change,
+            descuento,
+            clienteID,
+            userID: userId,
+
+            total,
+            realTotal: realtotal,
+            orderPrice,
+
+            ...(status === "completada" && {
+                sellDate: new Date(),
+            }),
+
+            items: {
+                create: items.map((item) => ({
+                    productId: item.productId,
+                    description: item.description,
+                    quantity: item.quantity,
+                    priceAtSale: item.priceAtSale,
+                })),
+            },
         },
-      },
     });
-  
+
     // =====================================================
     // STOCK UPDATE
     // =====================================================
-  
+
     let updatedProducts: {
-      id: string;
-      stock: number;
-      alertammount: number;
-      name: string;
+        id: string;
+        stock: number;
+        alertammount: number;
+        name: string;
     }[] = [];
-  
+
     const shouldAffectStock =
-      status === "activo" || status === "completada";
-  
+        status === "activo" || status === "completada";
+
     if (shouldAffectStock) {
-      updatedProducts = await Promise.all(
-        items.map((item) =>
-          prisma.product.update({
-            where: { id: item.productId },
-            data: {
-              stock: { decrement: item.quantity },
-            },
-            select: {
-              id: true,
-              stock: true,
-              alertammount: true,
-              name: true,
-            },
-          })
-        )
-      );
+        const registeredItems = items.filter(
+            (item) => item.productId !== null
+        );
+
+        updatedProducts = await Promise.all(
+            registeredItems.map((item) =>
+                prisma.product.update({
+                    where: {
+                        id: item.productId!,
+                    },
+                    data: {
+                        stock: {
+                            decrement: item.quantity,
+                        },
+                    },
+                    select: {
+                        id: true,
+                        stock: true,
+                        alertammount: true,
+                        name: true,
+                    },
+                })
+            )
+        );
     }
-  
+
     // =====================================================
-    // LOW STOCK ALERT - LOG - REDIRECT
+    // LOW STOCK ALERT
     // =====================================================
-  
+
     const lowStock = updatedProducts.filter(
-      (p) => p.stock <= p.alertammount
-    );
-  
-    if (lowStock.length > 0) {
-      const productNames = lowStock.map((p) => p.name).join(", ");
-      await createNotification(`Stock bajo en los productos: ${productNames}`);
-    }
-  
-    await createLog(
-      session.userId as string,
-      `Creo una Orden para ${nickname}`
+        (p) => p.stock <= p.alertammount
     );
 
-    if (order.status === "completada") {
-      redirect(`/print-receipt/${order.id}?action=created&entity=orden`);
+    if (lowStock.length > 0) {
+        const productNames = lowStock
+            .map((p) => p.name)
+            .join(", ");
+
+        await createNotification(
+            `Stock bajo en los productos: ${productNames}`
+        );
     }
-  
+
+    // =====================================================
+    // LOG
+    // =====================================================
+
+    await createLog(
+        session.userId as string,
+        `Creo una Orden para ${nickname}`
+    );
+
+    // =====================================================
+    // REDIRECT
+    // =====================================================
+
+    if (order.status === "completada") {
+        redirect(
+            `/print-receipt/${order.id}?action=created&entity=orden`
+        );
+    }
+
     redirect("/ordenes?action=created&entity=orden");
 }
 
@@ -997,14 +1046,13 @@ export async function editOrder(prevState: any, formData: FormData) {
     const id = formData.get("id") as string;
   
     const submission = parseWithZod(formData, { schema: orderSchema });
+  
     if (submission.status !== "success") {
-        console.log(submission.error);
-        return submission;
+      console.log(submission.error);
+      return submission;
     }
   
     const { nickname, status, items, paymentmethod, location, userId } = submission.value;
-  
-
   
     const debt = getNumber(formData.get("remainingDebt"));
     const payDebt = getNumber(formData.get("payDebt"));
@@ -1013,7 +1061,7 @@ export async function editOrder(prevState: any, formData: FormData) {
     const clienteID = formData.get("clientID") as string;
     const descuento = Number(formData.get("descuento")) || 0;
   
-    // Get existing order (IMPORTANT)
+    // Get existing order
     const existingOrder = await prisma.order.findUnique({
       where: { id },
       include: { items: true },
@@ -1022,25 +1070,37 @@ export async function editOrder(prevState: any, formData: FormData) {
     if (!existingOrder) {
       throw new Error("Order not found");
     }
-
-
+  
     const total = items.reduce(
       (sum, item) => sum + item.quantity * item.priceAtSale,
       0
     );
+  
     const realtotal = total * (1 - descuento / 100);
   
-    const productIds = items.map((item) => item.productId);
+    // Only registered products need to be fetched
+    const productIds = items
+      .map(item => item.productId)
+      .filter((id): id is string => id !== null);
   
     const products = await prisma.product.findMany({
       where: { id: { in: productIds } },
-      select: { id: true, buyprice: true, stock: true, name: true },
+      select: {
+        id: true,
+        buyprice: true,
+        stock: true,
+        name: true,
+        alertammount: true,
+      },
     });
   
-    //  STOCK VALIDATION 
-    const stockErrors = [];
+    // STOCK VALIDATION
+    const stockErrors: string[] = [];
   
     for (const item of items) {
+      // Custom product/service doesn't use stock
+      if (!item.productId) continue;
+  
       const product = products.find(p => p.id === item.productId);
   
       if (!product) {
@@ -1059,15 +1119,19 @@ export async function editOrder(prevState: any, formData: FormData) {
       redirect("/ordenes?error=Stock insuficiente");
     }
   
-    //Calculate internal cost
+    // Calculate internal cost
+    // Custom products/services have no internal product cost
     const orderPrice = items.reduce((sum, item) => {
-      const product = products.find((p) => p.id === item.productId);
+      if (!item.productId) return sum;
+  
+      const product = products.find(p => p.id === item.productId);
       const buyPrice = product?.buyprice || 0;
+  
       return sum + item.quantity * buyPrice;
     }, 0);
   
     // =====================================================
-    // STOCK CONTROL LOGIC 
+    // STOCK CONTROL LOGIC
     // =====================================================
   
     const wasAffectingStock =
@@ -1075,23 +1139,33 @@ export async function editOrder(prevState: any, formData: FormData) {
       existingOrder.status === "completada";
   
     const willAffectStock =
-      status === "activo" || status === "completada";
+      status === "activo" ||
+      status === "completada";
   
-    // RESTORE previous stock if order was affecting stock
+    // Restore previous stock
     if (wasAffectingStock) {
+      const previousRegisteredItems = existingOrder.items.filter(
+        item => item.productId !== null
+      );
+  
       await Promise.all(
-        existingOrder.items.map((item) =>
+        previousRegisteredItems.map(item =>
           prisma.product.update({
-            where: { id: item.productId },
+            where: { id: item.productId! },
             data: {
-              stock: { increment: item.quantity },
+              stock: {
+                increment: item.quantity,
+              },
             },
           })
         )
       );
     }
   
+    // =====================================================
     // UPDATE ORDER
+    // =====================================================
+  
     const order = await prisma.order.update({
       where: { id },
       data: {
@@ -1099,22 +1173,23 @@ export async function editOrder(prevState: any, formData: FormData) {
         status,
         paymentmethod: paymentmethod || null,
         location: location || null,
-        debt: debt,
+        debt,
         pay_debt: payDebt,
         last_payment: payReceived,
-        change: change,
-        descuento:descuento,
-        clienteID:clienteID,
+        change,
+        descuento,
+        clienteID,
         userID: userId,
         total,
-        realTotal:realtotal,
+        realTotal: realtotal,
         orderPrice,
         ...(status === "completada" && { sellDate: new Date() }),
   
         items: {
           deleteMany: {},
-          create: items.map((item) => ({
+          create: items.map(item => ({
             productId: item.productId,
+            description: item.description,
             quantity: item.quantity,
             priceAtSale: item.priceAtSale,
           })),
@@ -1122,7 +1197,10 @@ export async function editOrder(prevState: any, formData: FormData) {
       },
     });
   
-    // APPLY NEW STOCK (only if needed)
+    // =====================================================
+    // APPLY NEW STOCK
+    // =====================================================
+  
     let updatedProducts: {
       id: string;
       stock: number;
@@ -1131,12 +1209,18 @@ export async function editOrder(prevState: any, formData: FormData) {
     }[] = [];
   
     if (willAffectStock) {
+      const registeredItems = items.filter(
+        item => item.productId !== null
+      );
+  
       updatedProducts = await Promise.all(
-        items.map((item) =>
+        registeredItems.map(item =>
           prisma.product.update({
-            where: { id: item.productId },
+            where: { id: item.productId! },
             data: {
-              stock: { decrement: item.quantity },
+              stock: {
+                decrement: item.quantity,
+              },
             },
             select: {
               id: true,
@@ -1150,29 +1234,38 @@ export async function editOrder(prevState: any, formData: FormData) {
     }
   
     // =====================================================
-    //  LOW STOCK ALERT - LOG - Redirect
+    // LOW STOCK ALERT
     // =====================================================
   
     const lowStock = updatedProducts.filter(
-      (p) => p.stock <= p.alertammount
+      p => p.stock <= p.alertammount
     );
   
     if (lowStock.length > 0) {
       const productNames = lowStock.map(p => p.name).join(", ");
-      await createNotification(`Stock bajo en: ${productNames}`);
+  
+      await createNotification(
+        `Stock bajo en: ${productNames}`
+      );
     }
-
+  
+    // =====================================================
+    // LOG
+    // =====================================================
+  
     await createLog(
       session.userId as string,
       `Actualizo la Orden para ${nickname}`
     );
-
+  
     if (order.status === "completada") {
-      redirect(`/print-receipt/${order.id}?action=updated&entity=orden`);
+      redirect(
+        `/print-receipt/${order.id}?action=updated&entity=orden`
+      );
     }
   
     redirect("/ordenes?action=updated&entity=orden");
-}
+  }
 
 
 export async function RefundOrder(formData:FormData){
@@ -1207,10 +1300,14 @@ export async function RefundOrder(formData:FormData){
         data:{status: "cancelado"}
     })
 
+    const registeredItems = order.items.filter(
+        (item) => item.productId !== null
+    );
+
     await Promise.all(
-        order.items.map((item)=>
+        registeredItems.map((item)=>
              prisma.product.update({
-                where:{id:item.productId},
+                where:{id:item.productId!},
                 data:{
                     stock:{
                         increment:item.quantity
@@ -1258,7 +1355,9 @@ export async function getOrderData(orderId: string) {
       },
       items: {
         select: {
+        productId:true,
           quantity: true,
+          description:true,
           priceAtSale: true,
           product: {
             select: {

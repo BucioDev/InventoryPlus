@@ -1,6 +1,7 @@
 "use client"
 import { createOrder } from "@/app/actions";
 import { SubmitButton } from "@/app/components/SubmitButtons";
+import AddCustomProductForm from "@/app/components/dashboard/forms/AddCustomProduct";
 import { BRAND_OPTIONS } from "@/app/constants/brand-options";
 import { orderSchema } from "@/app/lib/zodSchemas";
 import { Button } from "@/components/ui/button";
@@ -11,11 +12,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { SubmissionResult, useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod/v4";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, ImageOffIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
-import { da } from "zod/v4/locales";
 
 
 function useDebounce<T>(value: T, delay: number): T {
@@ -59,12 +59,12 @@ type Cliente = {
     nombre: string;
     descuento: Number;
 }
-
+69
 
 export default function CreateOrderPage(){
 
     const [selectedProducts, setSelectedProducts] = useState<
-  { product: any; quantity: number; priceAtSale: number }[]
+    { product: any | null; description: string; quantity: number; priceAtSale: number }[]
 >([]);
 
 
@@ -343,66 +343,89 @@ export default function CreateOrderPage(){
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {selectedProducts.map((item, index) => (
-                                        <TableRow key={item.product.id}>
+                                    {selectedProducts.map((item, index) => (
+                                        <TableRow key={`${item.product?.id ?? "custom"}-${index}`}>
                                             <TableCell>
-                                                <Image alt="Imagen del producto" src={item.product.images[0]} width={64} height={64}
-                                                className="rounded-md object-cover h-16 w-16"/></TableCell>
-                                            <TableCell>{item.product.name}</TableCell>
+                                                {item.product ? (
+                                                    <Image
+                                                        alt="Imagen del producto"
+                                                        src={item.product.images[0]}
+                                                        width={64}
+                                                        height={64}
+                                                        className="rounded-md object-cover h-16 w-16"
+                                                    />
+                                                ) : (
+                                                    <ImageOffIcon width={64} height={64} />
+                                                )}
+                                            </TableCell>
+
+                                            <TableCell>{item.description}</TableCell>
+
                                             <TableCell>
-                                            <Input
-                                                type="number"
-                                                min={1}
-                                                step="0.01"
-                                                value={item.quantity}
-                                                name={`items[${index}].quantity`}
-                                                onChange={e => {
-                                                const newQuantity = parseInt(e.target.value, 10);
-                                                setSelectedProducts(prev => {
-                                                    const updated = [...prev];
-                                                    updated[index].quantity = newQuantity;
-                                                    return updated;
-                                                });
-                                                }}
-                                            />
-                                            <input
-                                                type="hidden"
-                                                name={`items[${index}].productId`}
-                                                value={item.product.id}
+                                                <Input
+                                                    type="number"
+                                                    min={1}
+                                                    step="1"
+                                                    value={item.quantity}
+                                                    name={`items[${index}].quantity`}
+                                                    onChange={e => {
+                                                        const newQuantity = parseInt(e.target.value, 10);
+                                                        setSelectedProducts(prev => {
+                                                            const updated = [...prev];
+                                                            updated[index].quantity = newQuantity;
+                                                            return updated;
+                                                        });
+                                                    }}
+                                                />
+
+                                                <input
+                                                    type="hidden"
+                                                    name={`items[${index}].productId`}
+                                                    value={item.product?.id ?? ""}
+                                                />
+
+                                                <input
+                                                    type="hidden"
+                                                    name={`items[${index}].description`}
+                                                    value={item.description}
                                                 />
                                             </TableCell>
+
                                             <TableCell>
-                                            <Input
-                                                type="number"
-                                                value={item.priceAtSale}
-                                                name={`items[${index}].priceAtSale`}
-                                                onChange={e => {
-                                                const newPrice = parseFloat(e.target.value);
-                                                setSelectedProducts(prev => {
-                                                    const updated = [...prev];
-                                                    updated[index].priceAtSale = newPrice;
-                                                    return updated;
-                                                });
-                                                }}
-                                            />
+                                                <Input
+                                                    type="number"
+                                                    value={item.priceAtSale}
+                                                    name={`items[${index}].priceAtSale`}
+                                                    onChange={e => {
+                                                        const newPrice = parseFloat(e.target.value);
+                                                        setSelectedProducts(prev => {
+                                                            const updated = [...prev];
+                                                            updated[index].priceAtSale = newPrice;
+                                                            return updated;
+                                                        });
+                                                    }}
+                                                />
                                             </TableCell>
+
                                             <TableCell>
-                                            ${(item.quantity * item.priceAtSale).toFixed(2)}
+                                                ${(item.quantity * item.priceAtSale).toFixed(2)}
                                             </TableCell>
+
                                             <TableCell>
-                                            <Button
-                                                variant="destructive"
-                                                onClick={() => {
-                                                setSelectedProducts(prev =>
-                                                    prev.filter(p => p.product.id !== item.product.id)
-                                                );
-                                                }}
-                                            >
-                                                Eliminar
-                                            </Button>
+                                                <Button
+                                                    variant="destructive"
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setSelectedProducts(prev =>
+                                                            prev.filter((_, i) => i !== index)
+                                                        );
+                                                    }}
+                                                >
+                                                    Eliminar
+                                                </Button>
                                             </TableCell>
                                         </TableRow>
-                                        ))}
+                                    ))}
                                     </TableBody>
                                     </Table>
                                 </div>
@@ -477,7 +500,20 @@ export default function CreateOrderPage(){
                         </div>
                     </div>
                 </CardContent>
-                <CardFooter className="flex justify-end mt-5">
+                <CardFooter className="flex justify-between mt-5">
+                <AddCustomProductForm
+                    onAdd={(item) => {
+                        setSelectedProducts(prev => [
+                            ...prev,
+                            {
+                                product: null,
+                                description: item.description,
+                                quantity: item.quantity,
+                                priceAtSale: item.priceAtSale,
+                            }
+                        ]);
+                    }}
+                />
                     <SubmitButton text="Crear orden" />
                 </CardFooter>
                 </form>
@@ -589,6 +625,7 @@ export default function CreateOrderPage(){
                                                 ...prev,
                                                 {
                                                 product,
+                                                description: product.name,
                                                 quantity: 1,
                                                 priceAtSale: product.sellprice, // default to current sell price'
                                                 },

@@ -5,6 +5,7 @@ import React, { forwardRef } from "react";
 import Barcode from "react-barcode";
 
 type OrderItem = {
+  description?:string | null;
   quantity?: number | null;
   priceAtSale?: number | null;
   product?: {
@@ -129,7 +130,7 @@ const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(
         >
           {order.items.map((item, i) => {
             const name =
-              item.product?.name ?? "Unknown Product";
+              item.description ?? item.product?.name ?? "Unknown Product";
 
             const originalPrice =
               item.priceAtSale ??

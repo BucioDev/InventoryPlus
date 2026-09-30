@@ -11,10 +11,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { SubmissionResult, useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod/v4";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, ImageOffIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
+import AddCustomProductForm from "./AddCustomProduct";
 
 
 function useDebounce<T>(value: T, delay: number): T {
@@ -47,20 +48,20 @@ interface SessionInfo {
   userId: string;
 }
 
-    interface EditOrderProps {
-  data: {
-    id: string;
-    nickname: string;
-    status: string;
-    total: number;
-    paymentmethod: string | null;
-    location: string | null;
-    debt: number | null;
-    pay_debt: number | null;
-    descuento: number | null;
-    cliente: ClienteData | null;
-    items: OrderItemData[];
-  };
+interface EditOrderProps {
+    data: {
+        id: string;
+        nickname: string;
+        status: string;
+        total: number;
+        paymentmethod: string | null;
+        location: string | null;
+        debt: number | null;
+        pay_debt: number | null;
+        descuento: number | null;
+        cliente: ClienteData | null;
+        items: OrderItemData[];
+    };
 }
 
 interface ClienteData {
@@ -68,17 +69,18 @@ interface ClienteData {
     nombre: string;
     descuento: number;
     codigo: string;
-  }
+}
 
-    interface OrderItemData {
-    productId: string;
+interface OrderItemData {
+    productId: string | null;
+    description: string | null;
     quantity: number;
     priceAtSale: number;
     product: {
         name: string;
-        images:string[];
-    };
-    }
+        images: string[];
+    } | null;
+}
 
     type Sucursal = {
     id: string;
@@ -94,7 +96,7 @@ interface ClienteData {
 export default function EditOrderForm({data}: EditOrderProps){
 
     const [selectedProducts, setSelectedProducts] = useState<
-  { product: any; quantity: number; priceAtSale: number }[]
+  {  product: any | null; description: string; quantity: number; priceAtSale: number }[]
 >([]);
 
 
@@ -190,19 +192,22 @@ export default function EditOrderForm({data}: EditOrderProps){
         }, [debouncedBarcode, debounceName, debouncedLocation, compatibility]);
 
         useEffect(() => {
-        if (data?.items?.length) {
-            setSelectedProducts(
-            data.items.map(item => ({
-                product: {
-                id: item.productId,
-                name: item.product.name,
-                images:item.product.images
-                },
-                quantity: item.quantity,
-                priceAtSale: item.priceAtSale,
-            }))
-            );
-        }
+            if (data?.items?.length) {
+                setSelectedProducts(
+                    data.items.map(item => ({
+                        product: item.product
+                            ? {
+                                id: item.productId,
+                                name: item.product.name,
+                                images: item.product.images ?? [],
+                            }
+                            : null,
+                        description: item.description ?? item.product?.name ?? "",
+                        quantity: item.quantity,
+                        priceAtSale: item.priceAtSale,
+                    }))
+                );
+            }
         }, [data.items]);
 
         // Fetch Client 
@@ -386,65 +391,91 @@ export default function EditOrderForm({data}: EditOrderProps){
                                     </TableHeader>
                                     <TableBody>
                                         {selectedProducts.map((item, index) => (
-                                        <TableRow key={item.product.id}>
-                                            <TableCell><Image alt="Imagen del producto" src={item.product.images[0]} width={64} height={64}
-                                            className="rounded-md object-cover h-16 w-16"/></TableCell>
-                                            <TableCell>{item.product.name}</TableCell>
+                                            <TableRow key={`${item.product?.id ?? "custom"}-${index}`}>
                                             <TableCell>
-                                            <Input
+                                                {item.product ? (
+                                                <Image
+                                                    alt="Imagen del producto"
+                                                    src={item.product.images[0]}
+                                                    width={64}
+                                                    height={64}
+                                                    className="rounded-md object-cover h-16 w-16"
+                                                />
+                                                ) : (
+                                                <ImageOffIcon width={64} height={64} />
+                                                )}
+                                            </TableCell>
+
+                                            <TableCell>{item.description}</TableCell>
+
+                                            <TableCell>
+                                                <Input
                                                 type="number"
                                                 min={1}
                                                 value={item.quantity}
                                                 name={`items[${index}].quantity`}
                                                 onChange={e => {
-                                                const newQuantity = parseInt(e.target.value, 10);
-                                                setSelectedProducts(prev => {
+                                                    const newQuantity = parseInt(e.target.value, 10);
+
+                                                    setSelectedProducts(prev => {
                                                     const updated = [...prev];
                                                     updated[index].quantity = newQuantity;
                                                     return updated;
-                                                });
+                                                    });
                                                 }}
-                                            />
-                                            <input
+                                                />
+
+                                                <input
                                                 type="hidden"
                                                 name={`items[${index}].productId`}
-                                                value={item.product.id}
+                                                value={item.product?.id ?? ""}
+                                                />
+
+                                                <input
+                                                type="hidden"
+                                                name={`items[${index}].description`}
+                                                value={item.description}
                                                 />
                                             </TableCell>
+
                                             <TableCell>
-                                            <Input
+                                                <Input
                                                 type="number"
                                                 value={item.priceAtSale}
                                                 step="0.01"
                                                 name={`items[${index}].priceAtSale`}
                                                 onChange={e => {
-                                                const newPrice = parseFloat(e.target.value);
-                                                setSelectedProducts(prev => {
+                                                    const newPrice = parseFloat(e.target.value);
+
+                                                    setSelectedProducts(prev => {
                                                     const updated = [...prev];
                                                     updated[index].priceAtSale = newPrice;
                                                     return updated;
-                                                });
+                                                    });
                                                 }}
-                                            />
+                                                />
                                             </TableCell>
+
                                             <TableCell>
-                                            ${(item.quantity * item.priceAtSale).toFixed(2)}
+                                                ${(item.quantity * item.priceAtSale).toFixed(2)}
                                             </TableCell>
+
                                             <TableCell>
-                                            <Button
+                                                <Button
                                                 variant="destructive"
+                                                type="button"
                                                 onClick={() => {
-                                                setSelectedProducts(prev =>
-                                                    prev.filter(p => p.product.id !== item.product.id)
-                                                );
+                                                    setSelectedProducts(prev =>
+                                                    prev.filter((_, i) => i !== index)
+                                                    );
                                                 }}
-                                            >
+                                                >
                                                 Eliminar
-                                            </Button>
+                                                </Button>
                                             </TableCell>
-                                        </TableRow>
+                                            </TableRow>
                                         ))}
-                                    </TableBody>
+                                        </TableBody>
                                     </Table>
                                 </div>
                                 )}
@@ -531,8 +562,22 @@ export default function EditOrderForm({data}: EditOrderProps){
                             <input type="hidden" name="id" value={data.id}/>
                     </div>
                 </CardContent>
-                <CardFooter className="flex justify-end mt-5">
-                    <SubmitButton text="Actualizar orden" />
+                <CardFooter className="flex justify-between mt-5">
+                <AddCustomProductForm
+                    onAdd={(item) => {
+                    setSelectedProducts(prev => [
+                        ...prev,
+                        {
+                        product: null,
+                        description: item.description,
+                        quantity: item.quantity,
+                        priceAtSale: item.priceAtSale,
+                        }
+                    ]);
+                    }}
+                />
+
+                <SubmitButton text="Actualizar orden" />
                 </CardFooter>
                 </form>
 
@@ -643,6 +688,7 @@ export default function EditOrderForm({data}: EditOrderProps){
                                                 ...prev,
                                                 {
                                                 product,
+                                                description: product.name,
                                                 quantity: 1,
                                                 priceAtSale: product.sellprice, // default to current sell price
                                                 },

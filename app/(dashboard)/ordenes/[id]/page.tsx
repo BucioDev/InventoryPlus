@@ -30,6 +30,7 @@ async function GetOrder(id:string){
             },
             items:{
                 select:{
+                    description: true,
                     quantity:true,
                     priceAtSale:true,
                     productId:true,

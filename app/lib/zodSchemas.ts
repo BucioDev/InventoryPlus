@@ -60,10 +60,11 @@ export const proveedoresSchema = z.object({
     contactEmail: z.string().optional(),
 })
 
-export const orderItemSchema = z.object({
-  productId: z.string().min(1),
-  quantity: z.coerce.number().min(1),
-  priceAtSale: z.coerce.number().min(0),
+const orderItemSchema = z.object({
+    productId: z.preprocess(value => value === "" ? null : value, z.string().nullable()),
+    description: z.string().min(1, "La descripción es requerida"),
+    quantity: z.number().int().positive(),
+    priceAtSale: z.number().nonnegative(),
 });
 
 export const orderSchema = z.object({
