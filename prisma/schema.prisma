@@ -29,6 +29,7 @@ model User {
   updatedAt DateTime @updatedAt
   Log       Log[]
   Order    Order[]
+  Shift   Shift[]
 }
 
 model Log {
@@ -162,6 +163,20 @@ model Notifications{
   read   Boolean @default(false)
   createdAt DateTime @default(now())
 }
+
+model Shift {
+  id String @id @default(uuid())
+
+  userID String
+  user User @relation(fields: [userID], references: [id])
+
+  startTime DateTime
+  endTime DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 
 enum Status {
   activo

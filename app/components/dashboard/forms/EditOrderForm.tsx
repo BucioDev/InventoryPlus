@@ -682,7 +682,7 @@ export default function EditOrderForm({data}: EditOrderProps){
                                 <TableCell className="text-right">
                                     <Button
                                         onClick={() => {
-                                            const exists = selectedProducts.find(p => p.product.id === product.id);
+                                            const exists = selectedProducts.some(item => item.product?.id === product.id);
                                             if (!exists) {
                                             setSelectedProducts(prev => [
                                                 ...prev,

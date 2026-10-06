@@ -9,10 +9,13 @@ export interface SessionData {
     role?: string;
     location?:String;
     isLoggedIn: boolean;
+    shiftOpen: boolean;
+    activeshift?: string;
 }
 
 export const defaultSession: SessionData = {
     isLoggedIn: false,
+    shiftOpen:false,
 }
 
 export const sessionOptions: SessionOptions = {
@@ -22,6 +25,6 @@ export const sessionOptions: SessionOptions = {
         httpOnly:true,
         secure: process.env.NODE_ENV === "production",
          // 👇 Cookie lifetime in seconds
-        maxAge: 60 * 60 * 24 * 7, // 7 days
+        maxAge: 60 * 60 * 18 * 1, // 18 hrs
     }
 }

@@ -101,7 +101,7 @@ export async function DashboardStats() {
                 </CardHeader>
                 <CardContent>
                         <p className="text-2xl font-bold">{sales.length}</p>
-                        <p className="text-sm text-muted-foreground">Totales desde la creacion de InventoryPlus</p>
+                        <p className="text-sm text-muted-foreground">Totales en este mes</p>
                     </CardContent>
             </Card>
             <Card >

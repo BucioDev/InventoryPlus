@@ -1,10 +1,8 @@
 import {  DeleteGasto, DeleteProveedor } from "@/app/actions";
 import { DeleteButton } from "@/app/components/SubmitButtons";
-import prisma from "@/app/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 
 
 

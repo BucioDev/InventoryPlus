@@ -5,11 +5,8 @@ import { cookies } from "next/headers";
 import prisma from "./lib/prisma";
 import { parseWithZod } from "@conform-to/zod/v4";
 import { categorySchema, clientesSchema, gastosSchema, loginSchema, orderSchema, productSchema, proveedoresSchema, sucursalSchema, userSchema, userSchemaWithoutPass } from "./lib/zodSchemas";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
-import { SubmissionResult } from "@conform-to/react";
-import { use } from "react";
-import { string } from "zod";
 
 
 const saltRounds = 12;
@@ -202,6 +199,7 @@ export async function login(prevState: unknown, formData:FormData){
     session.location = user.location || "",
     session.img = user.img || "";
     session.isLoggedIn = true;
+    
 
     await session.save();
 
@@ -424,7 +422,7 @@ export async function DeleteProduct(formData:FormData){
     await createLog(session.userId as string, `Elimino la Categoria ${formData.get("name")}`);
 
     redirect("/inventario?action=deleted&entity=producto");
- }
+}
 
 export async function AddStock(formData: FormData) {
 
@@ -1395,7 +1393,7 @@ export async function MarkAsRead(formData:FormData){
     })
 }
 
-//---------------------------------------- Notifications Actiions ------------------------------------------
+//---------------------------------------- Clients Actiions ------------------------------------------
 
 export async function createClient(prevState: any, formData: FormData) {
     const session = await getSesion();
@@ -1504,6 +1502,85 @@ export async function Deleteclient(formData:FormData){
     redirect("/clientes?action=deleted&entity=cliente");
 }
 
+
+//------------------------------- shift Acction -----------------------------
+
+export async function hasShiftOpen() {
+    const cookieStore = await cookies();
+    const session = await getIronSession<SessionData>(cookieStore, sessionOptions);
+
+    if (!session.activeshift){
+        redirect("/turno/inicio");
+    } else {
+        // check if the shift is longer that 20hr
+        const shift = await getShift(session.activeshift);
+        const startTime = new Date(shift.startTime);
+        const currentTime = new Date();
+        const diffInMs = currentTime.getTime() - startTime.getTime();
+        const limitHrs = 15 * 60 * 60 * 1000;
+
+        if (diffInMs >= limitHrs) {
+            redirect("/warning")
+        } else {
+            redirect("/ordenes")
+        }
+        }
+    }
+
+export async function openShift(userId:string) {
+    const currentTime = new Date();
+
+    const shift = await prisma.shift.create({
+        data:{
+            userID:userId,
+            startTime: currentTime
+        }
+    })
+
+    if (!shift) {
+        console.log("Could not start shitf");
+    }
+
+    const session = await getSesion();
+
+    session.shiftOpen = true;
+    session.activeshift= shift.id;
+
+    await session.save();
+
+    redirect("/ordenes")
+
+}
+
+export async function closeShift() {
+    const session = await getSesion();
+
+    session.activeshift = undefined;
+    session.shiftOpen = false;
+
+    await session.save();
+
+    redirect("/turno/inicio")
+}
+export async function getShift(shiftId: string){
+    
+    const shift = await prisma.shift.findFirst({
+        where:{
+            id:shiftId,
+        },
+        select:{
+            userID:true,
+            startTime:true,
+        }
+    })
+
+    if (!shift){
+        return notFound();
+    }
+
+    return shift;
+}
+
 // --------------Helper funtions-----------
 
 
@@ -1530,5 +1607,5 @@ export async function isLoggedIn(){
     function getNumber(value: FormDataEntryValue | null) {
         const num = Number(value);
         return isNaN(num) ? 0 : num;
-      }
+    }
 
