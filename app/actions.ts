@@ -1506,28 +1506,37 @@ export async function Deleteclient(formData:FormData){
 //------------------------------- shift Acction -----------------------------
 
 export async function hasShiftOpen() {
-    const cookieStore = await cookies();
-    const session = await getIronSession<SessionData>(cookieStore, sessionOptions);
+    const session = await getSesion();
 
-    if (!session.activeshift){
-        redirect("/turno/inicio");
-    } else {
-        // check if the shift is longer that 20hr
-        const shift = await getShift(session.activeshift);
+    const userId = session.userId as string;
+
+    const shift = await getShiftbyUser(userId);
+
+    if (shift){
+        // check if the shift is longer that 15hr
         const startTime = new Date(shift.startTime);
         const currentTime = new Date();
         const diffInMs = currentTime.getTime() - startTime.getTime();
         const limitHrs = 15 * 60 * 60 * 1000;
 
         if (diffInMs >= limitHrs) {
-            redirect("/warning")
+            session.shiftOpen = true;
+            session.activeshift= shift.id;
+
+            await session.save();
+            redirect("/turno/warning")
         } else {
+            session.shiftOpen = true;
+            session.activeshift= shift.id;
+
+            await session.save();
             redirect("/ordenes")
         }
         }
     }
 
-export async function openShift(userId:string) {
+export async function openShift(formData:FormData) {
+    const userId = formData.get("userId") as string;
     const currentTime = new Date();
 
     const shift = await prisma.shift.create({
@@ -1554,6 +1563,17 @@ export async function openShift(userId:string) {
 
 export async function closeShift() {
     const session = await getSesion();
+    const shiftId = session.activeshift;
+    const currentTime = new Date();
+
+    await prisma.shift.update({
+        where:{
+            id:shiftId
+        },
+        data:{
+            endTime:currentTime,
+        }
+    });
 
     session.activeshift = undefined;
     session.shiftOpen = false;
@@ -1571,11 +1591,34 @@ export async function getShift(shiftId: string){
         select:{
             userID:true,
             startTime:true,
+            endTime:true,
         }
     })
 
     if (!shift){
         return notFound();
+    }
+
+    return shift;
+}
+
+export async function getShiftbyUser(userId: string){
+    
+    const shift = await prisma.shift.findFirst({
+        where:{
+            userID:userId,
+            endTime:null,
+        },
+        select:{
+            id:true,
+            userID:true,
+            startTime:true,
+            endTime:true,
+        }
+    })
+
+    if (!shift){
+        return null;
     }
 
     return shift;

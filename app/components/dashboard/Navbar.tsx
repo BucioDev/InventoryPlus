@@ -6,6 +6,8 @@ import MobileNavBar from "./MobileNavBar";
 import { getSesion } from  "@/app/actions"
 import VendorNavbar from "./VendorNavbar"
 import SupervisorNavbarLinks from "./SupervisoNavbar";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 type NavbarClientProps = {
     isVendor: boolean;
@@ -26,7 +28,13 @@ export default function Navbar({ isVendor, isSupervisor }: NavbarClientProps) {
 
             <div className="flex gap-6">
                 <NotificationBox />
-                <LogoutForm />
+                {isVendor || isSupervisor ? (
+                <Button variant="destructive" asChild>
+                    <Link href="/turno/terminar">cerrar turno
+                    </Link></Button>
+                    ):(
+                    <LogoutForm />
+                    )}
             </div>
         </div>
     );

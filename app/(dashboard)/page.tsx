@@ -12,11 +12,11 @@ export default async function Dashboard() {
     const session = await isLoggedIn();
     
     if (session.role == "vendor"){
-        redirect("/ordenes");
+        redirect("/turno/inicio");
     }
 
     if (session.role == "supervisor") {
-        redirect("/ordenes")
+        redirect("/turno/inicio")
     }
 
     return (

@@ -1,7 +1,9 @@
-import { isLoggedIn } from "@/app/actions";
+import { closeShift, isLoggedIn } from "@/app/actions";
 import { SubmitButton } from "@/app/components/SubmitButtons";
 import LogoutForm from "@/app/components/logoutForm";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 
 
 
@@ -17,10 +19,9 @@ export default async function IniciarTurnoPage() {
                 </CardHeader>
                 <CardContent className="w-full flex justify-between">
                     <LogoutForm/>
-                        <form>
-                            <input type="hidden" name="userId" value={id}/>
-                            <SubmitButton text="Cerrar Turno"/>
-                        </form>
+                    <Button asChild>
+                        <Link href="/turno/terminar">Cerrar turno</Link>
+                    </Button>
                     </CardContent>
             </Card>
         </div>
