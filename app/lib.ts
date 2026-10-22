@@ -24,7 +24,7 @@ export const sessionOptions: SessionOptions = {
     cookieOptions:{
         httpOnly:true,
         secure: process.env.NODE_ENV === "production",
-         // 👇 Cookie lifetime in seconds
+         //  Cookie lifetime in seconds
         maxAge: 60 * 60 * 18 * 1, // 18 hrs
     }
 }

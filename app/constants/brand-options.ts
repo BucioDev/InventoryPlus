@@ -22,6 +22,7 @@ export const BRAND_OPTIONS = [
   "HONDA CBF-125",
   "HONDA CBF160",
   "HONDA CB190R 2.0",
+  "HONDA CG125 CDI",
   "HONDA CG125 TITÁN",
   "HONDA CGL125 Tool",
   "Honda Cargo 125",
