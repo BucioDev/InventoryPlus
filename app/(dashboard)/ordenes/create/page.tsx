@@ -148,7 +148,7 @@ export default function CreateOrderPage(){
                 if (debouncedLocation) params.append("location", debouncedLocation);
                 compatibility.forEach(c => params.append("compatibility", c));
     
-                const res = await fetch(`/api/products?${params.toString()}`);
+                const res = await fetch(`/api/productsearch?${params.toString()}`);
                 const data = await res.json();
                 setProducts(data);
             };
