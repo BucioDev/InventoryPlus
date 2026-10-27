@@ -35,8 +35,13 @@ export async function GET(req: Request) {
       where: {
         AND: [
           { isDeleted: false },
+          { stock: { gt: 0 } },
           barcode ? { barcode: { contains: barcode, mode: "insensitive" } } : {},
-          name ? { name: { contains: name, mode: "insensitive" } } : {},
+          ...(name?.trim()
+            ? name.trim().split(/\s+/).map((word) => ({
+                name: { contains: word, mode: "insensitive" as const },
+              }))
+            : []),
           location ? { location: { contains: location, mode: "insensitive" } } : {},
         ],
       },
